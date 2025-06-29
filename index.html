@@ -2,298 +2,708 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Juego de Cubo de Rubik 3D con Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rubik 3D – Demo Canvas</title>
   <style>
-    body { margin: 0; background: #f0f0f0; font-family: Arial, sans-serif; }
-    #canvasContainer { width: 100vw; height: 70vh; display: flex; justify-content: center; align-items: center; }
-    #controls { text-align: center; padding: 10px; }
-    #controls select, #controls button { margin: 5px; padding: 5px; font-size: 16px; }
-    #status { margin-top: 10px; font-size: 18px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      background: #111;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    a {
+      color: #08f;
+      text-decoration: none;
+    }
+    #controls-container {
+      position: fixed;
+      top: 40px;
+      left: 10px;
+      padding: 10px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .control-group label {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .control-group select, .control-group button {
+      padding: 5px 10px;
+      margin: 2px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+      font-family: Arial;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .control-group button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .control-group select {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: 25px;
+      background-image: url('data:image/svg+xml;utf8,<svg fill="%23ffffff" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 5px center;
+      background-size: 16px;
+    }
+    .control-group select:focus {
+      outline: none;
+      border-color: #08f;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
   </style>
 </head>
 <body>
-  <div id="canvasContainer">
-    <div>Arrastra con el ratón para girar el cubo · Usa la rueda para hacer zoom · Powered by Canvas</div>
+  <div id="info">
+    Arrastra con el ratón para girar el cubo · Usa la rueda para hacer <em>zoom</em> · Powered by Canvas
   </div>
-  <div id="controls">
-    <div>
-      Seleccionar Cara para Animación:
-      <select id="faceSelect">
-        <option value="F">Front (F)</option>
-        <option value="B">Back (B)</option>
-        <option value="L">Left (L)</option>
-        <option value="R">Right (R)</option>
-        <option value="U">Up (U)</option>
-        <option value="D">Down (D)</option>
+  <div id="controls-container">
+    <div class="control-group">
+      <label for="faceSelector">Seleccionar Cara para Animación:</label>
+      <select id="faceSelector">
+        <option value="front">Front (F)</option>
+        <option value="back">Back (B)</option>
+        <option value="left">Left (L)</option>
+        <option value="right">Right (R)</option>
+        <option value="up">Up (U)</option>
+        <option value="down">Down (D)</option>
       </select>
     </div>
-    <div>
-      Movimientos de Cara:
-      <button onclick="makeMove('U')">U</button>
-      <button onclick="makeMove('U\'')">U'</button>
-      <button onclick="makeMove('D')">D</button>
-      <button onclick="makeMove('D\'')">D'</button>
-      <button onclick="makeMove('L')">L</button>
-      <button onclick="makeMove('L\'')">L'</button>
-      <button onclick="makeMove('R')">R</button>
-      <button onclick="makeMove('R\'')">R'</button>
-      <button onclick="makeMove('F')">F</button>
-      <button onclick="makeMove('F\'')">F'</button>
-      <button onclick="makeMove('B')">B</button>
-      <button onclick="makeMove('B\'')">B'</button>
+    <div class="control-group">
+      <label>Movimientos de Cara:</label>
+      <div class="button-row">
+        <button data-move="U">U</button>
+        <button data-move="U_prime">U'</button>
+        <button data-move="D">D</button>
+        <button data-move="D_prime">D'</button>
+        <button data-move="L">L</button>
+        <button data-move="L_prime">L'</button>
+        <button data-move="R">R</button>
+        <button data-move="R_prime">R'</button>
+        <button data-move="F">F</button>
+        <button data-move="F_prime">F'</button>
+        <button data-move="B">B</button>
+        <button data-move="B_prime">B'</button>
+      </div>
     </div>
-    <div>
-      Movimientos de Capa Media:
-      <button onclick="makeMove('M')">M</button>
-      <button onclick="makeMove('M\'')">M'</button>
-      <button onclick="makeMove('E')">E</button>
-      <button onclick="makeMove('E\'')">E'</button>
-      <button onclick="makeMove('S')">S</button>
-      <button onclick="makeMove('S\'')">S'</button>
+    <div class="control-group">
+      <label>Movimientos de Capa Media:</label>
+      <div class="button-row">
+        <button data-move="M">M</button>
+        <button data-move="M_prime">M'</button>
+        <button data-move="E">E</button>
+        <button data-move="E_prime">E'</button>
+        <button data-move="S">S</button>
+        <button data-move="S_prime">S'</button>
+      </div>
     </div>
-    <div>
-      Rotaciones de Cubo Completo:
-      <button onclick="makeMove('x')">x</button>
-      <button onclick="makeMove('x\'')">x'</button>
-      <button onclick="makeMove('y')">y</button>
-      <button onclick="makeMove('y\'')">y'</button>
-      <button onclick="makeMove('z')">z</button>
-      <button onclick="makeMove('z\'')">z'</button>
+    <div class="control-group">
+      <label>Rotaciones de Cubo Completo:</label>
+      <div class="button-row">
+        <button data-move="x">x</button>
+        <button data-move="x_prime">x'</button>
+        <button data-move="y">y</button>
+        <button data-move="y_prime">y'</button>
+        <button data-move="z">z</button>
+        <button data-move="z_prime">z'</button>
+      </div>
     </div>
-    <div>
-      <button onclick="startBot()">Iniciar Bot</button>
-      <button onclick="scrambleCube()">Mezclar Cubo</button>
+    <div class="control-group">
+      <label>Acciones:</label>
+      <div class="button-row">
+        <button id="scrambleButton">Mezclar</button>
+        <button id="solveButton">Resolver</button>
+      </div>
     </div>
-    <div id="status">Cubo listo</div>
   </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-<script>
-var scene, camera, renderer, cubeGroup, isAnimating = false;
-var cubeState = [];
-var moveQueue = [];
-var DEMO_MODE = false;
-
-function init() {
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(5, 5, 5);
-  camera.lookAt(0, 0, 0);
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight * 0.7);
-  document.getElementById('canvasContainer').appendChild(renderer.domElement);
-
-  cubeGroup = new THREE.Group();
-  scene.add(cubeGroup);
-  initializeCube();
-  setupControls();
-  animate();
-}
-
-function initializeCube() {
-  cubeState = [];
-  const colors = {
-    U: 0xffffff, // Blanco
-    D: 0xffff00, // Amarillo
-    F: 0x00ff00, // Verde
-    B: 0x0000ff, // Azul
-    L: 0xffa500, // Naranja
-    R: 0xff0000  // Rojo
-  };
-  for (let x = -1; x <= 1; x++) {
-    for (let y = -1; y <= 1; y++) {
-      for (let z = -1; z <= 1; z++) {
-        const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
-        const materials = [
-          new THREE.MeshBasicMaterial({ color: x === 1 ? colors.R : 0x000000 }),
-          new THREE.MeshBasicMaterial({ color: x === -1 ? colors.L : 0x000000 }),
-          new THREE.MeshBasicMaterial({ color: y === 1 ? colors.U : 0x000000 }),
-          new THREE.MeshBasicMaterial({ color: y === -1 ? colors.D : 0x000000 }),
-          new THREE.MeshBasicMaterial({ color: z === 1 ? colors.F : 0x000000 }),
-          new THREE.MeshBasicMaterial({ color: z === -1 ? colors.B : 0x000000 })
-        ];
-        const cube = new THREE.Mesh(geometry, materials);
-        cube.position.set(x, y, z);
-        cubeGroup.add(cube);
-        cubeState.push({ position: { x, y, z }, colors: materials.map(m => m.color.getHex()) });
+  <canvas id="canvas"></canvas>
+  <script>
+    window.addEventListener('load', () => {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const faceSelector = document.getElementById('faceSelector');
+      const controlsContainer = document.getElementById('controls-container');
+      const scrambleButton = document.getElementById('scrambleButton');
+      const solveButton = document.getElementById('solveButton');
+      
+      // Ajustar tamaño del canvas
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
       }
-    }
-  }
-}
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
 
-function setupControls() {
-  let isDragging = false, previousMousePosition = { x: 0, y: 0 };
-  document.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    previousMousePosition = { x: e.clientX, y: e.clientY };
-  });
-  document.addEventListener('mousemove', (e) => {
-    if (isDragging && !isAnimating) {
-      const deltaMove = {
-        x: e.clientX - previousMousePosition.x,
-        y: e.clientY - previousMousePosition.y
+      // Definir lugares de la grilla 3×3
+      const lugares = ['TL', 'TC', 'TR', 'ML', 'MC', 'MR', 'BL', 'BC', 'BR'];
+
+      // Estado lógico del cubo
+      const estadoCubo = {
+        front: lugares.map(lugar => ({ color: '#00ff00', lugar })), // Verde
+        back: lugares.map(lugar => ({ color: '#0000ff', lugar })),  // Azul
+        left: lugares.map(lugar => ({ color: '#ffa500', lugar })),  // Naranja
+        right: lugares.map(lugar => ({ color: '#ff0000', lugar })), // Rojo
+        up: lugares.map(lugar => ({ color: '#ffffff', lugar })),    // Blanco
+        down: lugares.map(lugar => ({ color: '#ffff00', lugar }))   // Amarillo
       };
-      cubeGroup.rotation.y += deltaMove.x * 0.005;
-      cubeGroup.rotation.x += deltaMove.y * 0.005;
-      previousMousePosition = { x: e.clientX, y: e.clientY };
-    }
-  });
-  document.addEventListener('mouseup', () => { isDragging = false; });
-  document.addEventListener('wheel', (e) => {
-    camera.position.z += e.deltaY * 0.01;
-    camera.position.z = Math.max(3, Math.min(10, camera.position.z));
-  });
-}
 
-function animate() {
-  requestAnimationFrame(animate);
-  if (moveQueue.length > 0 && !isAnimating) {
-    executeMove(moveQueue.shift());
-  }
-  renderer.render(scene, camera);
-}
+      // Definir vectores normales base de cada cara
+      const normalesOriginales = {
+        front: [0, 0, 1],
+        back: [0, 0, -1],
+        left: [-1, 0, 0],
+        right: [1, 0, 0],
+        up: [0, 1, 0],
+        down: [0, -1, 0]
+      };
 
-function makeMove(move) {
-  if (!isAnimating) {
-    moveQueue.push(move);
-  }
-}
+      // Definir ángulos objetivo para cada cara
+      const angulosObjetivo = {
+        front: { rotationX: 0, rotationY: 0 },
+        back: { rotationX: 0, rotationY: Math.PI },
+        left: { rotationX: 0, rotationY: -Math.PI / 2 },
+        right: { rotationX: 0, rotationY: Math.PI / 2 },
+        up: { rotationX: -Math.PI / 2, rotationY: 0 },
+        down: { rotationX: Math.PI / 2, rotationY: 0 }
+      };
 
-function executeMove(move) {
-  isAnimating = true;
-  const axisMap = {
-    U: { axis: 'y', value: 1 }, D: { axis: 'y', value: -1 },
-    F: { axis: 'z', value: 1 }, B: { axis: 'z', value: -1 },
-    L: { axis: 'x', value: -1 }, R: { axis: 'x', value: 1 },
-    M: { axis: 'x', value: 0 }, E: { axis: 'y', value: 0 },
-    S: { axis: 'z', value: 0 }, x: { axis: 'x', cube: true },
-    y: { axis: 'y', cube: true }, z: { axis: 'z', cube: true }
-  };
-  const moveInfo = axisMap[move.replace("'", "")];
-  const isReverse = move.includes("'");
-  const angle = isReverse ? -Math.PI / 2 : Math.PI / 2;
-  const cubesToRotate = moveInfo.cube ? cubeGroup.children : cubeState
-    .filter(cube => Math.abs(cube.position[moveInfo.axis] - moveInfo.value) < 0.1)
-    .map(cube => cubeGroup.children[cubeState.indexOf(cube)]);
-  
-  let t = 0;
-  const animateRotation = () => {
-    t += 0.05;
-    const currentAngle = angle * t;
-    cubesToRotate.forEach(cube => {
-      if (moveInfo.cube) {
-        cubeGroup.rotation[moveInfo.axis] = currentAngle;
-      } else {
-        const pos = cube.position.clone();
-        if (moveInfo.axis === 'x') {
-          cube.position.y = pos.y * Math.cos(currentAngle) - pos.z * Math.sin(currentAngle);
-          cube.position.z = pos.y * Math.sin(currentAngle) + pos.z * Math.cos(currentAngle);
-          cube.rotation.x += currentAngle - (cube.rotation.x % (Math.PI / 2));
-        } else if (moveInfo.axis === 'y') {
-          cube.position.x = pos.x * Math.cos(currentAngle) + pos.z * Math.sin(currentAngle);
-          cube.position.z = -pos.x * Math.sin(currentAngle) + pos.z * Math.cos(currentAngle);
-          cube.rotation.y += currentAngle - (cube.rotation.y % (Math.PI / 2));
-        } else {
-          cube.position.x = pos.x * Math.cos(currentAngle) - pos.y * Math.sin(currentAngle);
-          cube.position.y = pos.x * Math.sin(currentAngle) + pos.y * Math.cos(currentAngle);
-          cube.rotation.z += currentAngle - (cube.rotation.z % (Math.PI / 2));
+      // Definir vértices de un cubo (coordenadas 3D)
+      const vertices = [
+        [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], // Cara trasera
+        [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]      // Cara delantera
+      ];
+
+      // Definir caras del cubo (índices de vértices, colores y nombre)
+      const faces = [
+        { indices: [0, 1, 2, 3], color: '#0000ff', name: 'back' },  // Atrás (azul)
+        { indices: [4, 5, 6, 7], color: '#00ff00', name: 'front' }, // Frente (verde)
+        { indices: [0, 1, 5, 4], color: '#ffa500', name: 'left' },  // Izquierda (naranja)
+        { indices: [2, 3, 7, 6], color: '#ff0000', name: 'right' }, // Derecha (rojo)
+        { indices: [1, 2, 6, 5], color: '#ffff00', name: 'down' },  // Abajo (amarillo)
+        { indices: [0, 3, 7, 4], color: '#ffffff', name: 'up' }     // Arriba (blanco)
+      ];
+
+      // Parámetros de la cámara
+      let rotationX = 0.5, rotationY = 0.7;
+      let cameraDistance = 5;
+      const fov = 1;
+      let isDragging = false;
+      let lastMouseX = 0, lastMouseY = 0;
+      let targetRotationX = rotationX;
+      let targetRotationY = rotationY;
+      let startRotationX = rotationX;
+      let startRotationY = rotationY;
+      let animationStartTime = null;
+      let isAnimating = false;
+      const ANIMATION_DURATION = 300; // Duración para animaciones de vista
+      let scrambleMoves = [];
+
+      // Versión 1.8: Corrige TypeError en rotateFaceStickers
+      // Autor: Grok 3, creado por xAI
+      // Fecha y Hora: 10:32 PM -03, Wednesday, June 25, 2025
+
+      // Mapa de movimientos a nombres de caras
+      const moveToFaceMap = {
+        U: 'up',
+        D: 'down',
+        L: 'left',
+        R: 'right',
+        F: 'front',
+        B: 'back'
+      };
+
+      // Mapa de adyacencias de caras
+      const faceAdjacencies = {
+        front: {
+          clockwise: [['up', [6, 7, 8]], ['right', [0, 3, 6]], ['down', [2, 1, 0]], ['left', [8, 5, 2]]],
+          counterClockwise: [['up', [6, 7, 8]], ['left', [8, 5, 2]], ['down', [2, 1, 0]], ['right', [0, 3, 6]]]
+        },
+        back: {
+          clockwise: [['up', [2, 1, 0]], ['left', [0, 3, 6]], ['down', [6, 7, 8]], ['right', [8, 5, 2]]],
+          counterClockwise: [['up', [2, 1, 0]], ['right', [8, 5, 2]], ['down', [6, 7, 8]], ['left', [0, 3, 6]]]
+        },
+        left: {
+          clockwise: [['up', [0, 3, 6]], ['front', [0, 3, 6]], ['down', [0, 3, 6]], ['back', [8, 5, 2]]],
+          counterClockwise: [['up', [0, 3, 6]], ['back', [8, 5, 2]], ['down', [0, 3, 6]], ['front', [0, 3, 6]]]
+        },
+        right: {
+          clockwise: [['up', [8, 5, 2]], ['back', [0, 3, 6]], ['down', [8, 5, 2]], ['front', [8, 5, 2]]],
+          counterClockwise: [['up', [8, 5, 2]], ['front', [8, 5, 2]], ['down', [8, 5, 2]], ['back', [0, 3, 6]]]
+        },
+        up: {
+          clockwise: [['back', [0, 1, 2]], ['right', [0, 1, 2]], ['front', [0, 1, 2]], ['left', [0, 1, 2]]],
+          counterClockwise: [['back', [0, 1, 2]], ['left', [0, 1, 2]], ['front', [0, 1, 2]], ['right', [0, 1, 2]]]
+        },
+        down: {
+          clockwise: [['front', [6, 7, 8]], ['right', [6, 7, 8]], ['back', [6, 7, 8]], ['left', [6, 7, 8]]],
+          counterClockwise: [['front', [6, 7, 8]], ['left', [6, 7, 8]], ['back', [6, 7, 8]], ['right', [6, 7, 8]]]
+        }
+      };
+
+      // Reordenamiento de stickers
+      const reorderMapClockwise = { 0: 6, 1: 3, 2: 0, 3: 7, 4: 4, 5: 1, 6: 8, 7: 5, 8: 2 };
+      const reorderMapCounterClockwise = { 0: 2, 1: 5, 2: 8, 3: 1, 4: 4, 5: 7, 6: 0, 7: 3, 8: 6 };
+
+      function rotateFaceStickers(faceName, direction) {
+        const faceStickers = estadoCubo[faceName];
+        if (!faceStickers) {
+          console.error(`Invalid faceName: ${faceName}`);
+          return;
+        }
+        const reorderMap = direction === 'clockwise' ? reorderMapClockwise : reorderMapCounterClockwise;
+        const tempStickers = [...faceStickers];
+        for (let i = 0; i < 9; i++) {
+          faceStickers[i].color = tempStickers[reorderMap[i]].color;
         }
       }
-    });
-    if (t >= 1) {
-      cubesToRotate.forEach(cube => {
-        cube.position[moveInfo.axis] = Math.round(cube.position[moveInfo.axis] * 100) / 100;
-        if (moveInfo.axis === 'x') {
-          cube.position.y = Math.round(cube.position.y * 100) / 100;
-          cube.position.z = Math.round(cube.position.z * 100) / 100;
-        } else if (moveInfo.axis === 'y') {
-          cube.position.x = Math.round(cube.position.x * 100) / 100;
-          cube.position.z = Math.round(cube.position.z * 100) / 100;
-        } else {
-          cube.position.x = Math.round(cube.position.x * 100) / 100;
-          cube.position.y = Math.round(cube.position.y * 100) / 100;
+
+      function rotateAdjacentStickers(faceName, direction) {
+        const adjacencies = faceAdjacencies[faceName];
+        if (!adjacencies) {
+          console.error(`No adjacencies for face: ${faceName}`);
+          return;
+        }
+        const tempColors = adjacencies[direction][0][1].map(idx => estadoCubo[adjacencies[direction][0][0]][idx].color);
+        for (let i = 0; i < adjacencies[direction].length; i++) {
+          const currentFace = adjacencies[direction][i][0];
+          const currentIndices = adjacencies[direction][i][1];
+          const nextFace = adjacencies[direction][(i + 1) % adjacencies[direction].length][0];
+          const nextIndices = adjacencies[direction][(i + 1) % adjacencies[direction].length][1];
+          if (i === adjacencies[direction].length - 1) {
+            currentIndices.forEach((idx, j) => {
+              estadoCubo[currentFace][idx].color = tempColors[j];
+            });
+          } else {
+            currentIndices.forEach((idx, j) => {
+              estadoCubo[currentFace][idx].color = estadoCubo[nextFace][nextIndices[j]].color;
+            });
+          }
+        }
+      }
+
+      function rotateFace(faceName, direction) {
+        if (isAnimating) return;
+        isAnimating = true;
+        rotateFaceStickers(faceName, direction);
+        rotateAdjacentStickers(faceName, direction);
+        drawCube();
+        isAnimating = false;
+      }
+
+      function rotateMiddleLayer(layerType, direction) {
+        if (isAnimating) return;
+        isAnimating = true;
+        const adjacencies = {
+          M: {
+            clockwise: [['up', [1, 4, 7]], ['front', [1, 4, 7]], ['down', [1, 4, 7]], ['back', [1, 4, 7]]],
+            counterClockwise: [['up', [1, 4, 7]], ['back', [1, 4, 7]], ['down', [1, 4, 7]], ['front', [1, 4, 7]]]
+          },
+          E: {
+            clockwise: [['front', [3, 4, 5]], ['right', [3, 4, 5]], ['back', [3, 4, 5]], ['left', [3, 4, 5]]],
+            counterClockwise: [['front', [3, 4, 5]], ['left', [3, 4, 5]], ['back', [3, 4, 5]], ['right', [3, 4, 5]]]
+          },
+          S: {
+            clockwise: [['up', [3, 4, 5]], ['right', [1, 4, 7]], ['down', [5, 4, 3]], ['left', [7, 4, 1]]],
+            counterClockwise: [['up', [3, 4, 5]], ['left', [7, 4, 1]], ['down', [5, 4, 3]], ['right', [1, 4, 7]]]
+          }
+        }[layerType];
+        const tempColors = adjacencies[direction][0][1].map(idx => estadoCubo[adjacencies[direction][0][0]][idx].color);
+        for (let i = 0; i < adjacencies[direction].length; i++) {
+          const currentFace = adjacencies[direction][i][0];
+          const currentIndices = adjacencies[direction][i][1];
+          const nextFace = adjacencies[direction][(i + 1) % adjacencies[direction].length][0];
+          const nextIndices = adjacencies[direction][(i + 1) % adjacencies[direction].length][1];
+          if (i === adjacencies.length - 1) {
+            currentIndices.forEach((idx, j) => {
+              estadoCubo[currentFace][idx].color = tempColors[j];
+            });
+          } else {
+            currentIndices.forEach((idx, j) => {
+              estadoCubo[currentFace][idx].color = estadoCubo[nextFace][nextIndices[j]].color;
+            });
+          }
+        }
+        drawCube();
+        isAnimating = false;
+      }
+
+      function rotateCube(axis, direction) {
+        if (isAnimating) return;
+        isAnimating = true;
+        const tempCubeState = JSON.parse(JSON.stringify(estadoCubo));
+        let newFaceMapping = {};
+        if (axis === 'x') {
+          if (direction === 'clockwise') {
+            newFaceMapping = {
+              front: tempCubeState.down,
+              down: tempCubeState.back,
+              back: tempCubeState.up,
+              up: tempCubeState.front,
+              left: tempCubeState.left,
+              right: tempCubeState.right
+            };
+            rotateFaceStickers('left', 'counterClockwise');
+            rotateFaceStickers('right', 'clockwise');
+          } else {
+            newFaceMapping = {
+              front: tempCubeState.up,
+              up: tempCubeState.back,
+              back: tempCubeState.down,
+              down: tempCubeState.front,
+              left: tempCubeState.left,
+              right: tempCubeState.right
+            };
+            rotateFaceStickers('left', 'clockwise');
+            rotateFaceStickers('right', 'counterClockwise');
+          }
+        } else if (axis === 'y') {
+          if (direction === 'clockwise') {
+            newFaceMapping = {
+              front: tempCubeState.right,
+              right: tempCubeState.back,
+              back: tempCubeState.left,
+              left: tempCubeState.front,
+              up: tempCubeState.up,
+              down: tempCubeState.down
+            };
+            rotateFaceStickers('up', 'clockwise');
+            rotateFaceStickers('down', 'counterClockwise');
+          } else {
+            newFaceMapping = {
+              front: tempCubeState.left,
+              left: tempCubeState.back,
+              back: tempCubeState.right,
+              right: tempCubeState.front,
+              up: tempCubeState.up,
+              down: tempCubeState.down
+            };
+            rotateFaceStickers('up', 'counterClockwise');
+            rotateFaceStickers('down', 'clockwise');
+          }
+        } else if (axis === 'z') {
+          if (direction === 'clockwise') {
+            newFaceMapping = {
+              up: tempCubeState.left,
+              left: tempCubeState.down,
+              down: tempCubeState.right,
+              right: tempCubeState.up,
+              front: tempCubeState.front,
+              back: tempCubeState.back
+            };
+            rotateFaceStickers('front', 'clockwise');
+            rotateFaceStickers('back', 'counterClockwise');
+          } else {
+            newFaceMapping = {
+              up: tempCubeState.right,
+              right: tempCubeState.down,
+              down: tempCubeState.left,
+              left: tempCubeState.up,
+              front: tempCubeState.front,
+              back: tempCubeState.back
+            };
+            rotateFaceStickers('front', 'counterClockwise');
+            rotateFaceStickers('back', 'clockwise');
+          }
+        }
+        for (const faceName in newFaceMapping) {
+          estadoCubo[faceName] = newFaceMapping[faceName];
+        }
+        drawCube();
+        isAnimating = false;
+      }
+
+      function scrambleCube() {
+        if (isAnimating) return;
+        scrambleMoves = [];
+        const moves = ['U', 'D', 'L', 'R', 'F', 'B'];
+        const dirs = ['clockwise', 'counterClockwise'];
+        let i = 0;
+        const total = 20;
+        isAnimating = true;
+        function step() {
+          if (i < total) {
+            const move = moves[Math.floor(Math.random() * moves.length)];
+            const dir = dirs[Math.floor(Math.random() * 2)];
+            scrambleMoves.push({ move, direction: dir });
+            rotateFace(moveToFaceMap[move], dir);
+            i++;
+            setTimeout(step, 100);
+          } else {
+            isAnimating = false;
+          }
+        }
+        step();
+      }
+
+      function solveCube() {
+        if (isAnimating || scrambleMoves.length === 0) return;
+        let i = scrambleMoves.length - 1;
+        isAnimating = true;
+        function step() {
+          if (i >= 0) {
+            const { move, direction } = scrambleMoves[i];
+            const opposite = direction === 'clockwise' ? 'counterClockwise' : 'clockwise';
+            rotateFace(moveToFaceMap[move], opposite);
+            i--;
+            setTimeout(step, 100);
+          } else {
+            isAnimating = false;
+          }
+        }
+        step();
+      }
+
+      controlsContainer.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-move]');
+        if (button) {
+          const move = button.dataset.move;
+          const [moveType, prime] = move.split('_');
+          const direction = prime === 'prime' ? 'counterClockwise' : 'clockwise';
+          switch (moveType) {
+            case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
+              const faceName = moveToFaceMap[moveType];
+              if (faceName) {
+                rotateFace(faceName, direction);
+              } else {
+                console.error(`Invalid moveType: ${moveType}`);
+              }
+              break;
+            case 'M': case 'E': case 'S':
+              rotateMiddleLayer(moveType, direction);
+              break;
+            case 'x': case 'y': case 'z':
+              rotateCube(moveType, direction);
+              break;
+          }
         }
       });
-      updateCubeState();
-      isAnimating = false;
-    } else {
-      requestAnimationFrame(animateRotation);
-    }
-  };
-  animateRotation();
-}
 
-function updateCubeState() {
-  cubeState = cubeGroup.children.map(cube => ({
-    position: { x: cube.position.x, y: cube.position.y, z: cube.position.z },
-    colors: cube.material.map(m => m.color.getHex())
-  }));
-}
+      function rotarVector([x, y, z]) {
+        let newX = x * Math.cos(rotationY) - z * Math.sin(rotationY);
+        let newZ = x * Math.sin(rotationY) + z * Math.cos(rotationY);
+        let newY = y * Math.cos(rotationX) - newZ * Math.sin(rotationX);
+        newZ = y * Math.sin(rotationX) + newZ * Math.cos(rotationX);
+        return [newX, newY, newZ];
+      }
 
-function scrambleCube() {
-  const moves = ["U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"];
-  for (let i = 0; i < 20; i++) {
-    moveQueue.push(moves[Math.floor(Math.random() * moves.length)]);
-  }
-  document.getElementById('status').textContent = 'Cubo mezclado';
-}
+      function productoEscalar(a, b) {
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+      }
 
-function evaluateCubeState() {
-  let score = 0;
-  const targetColors = {
-    U: 0xffffff, D: 0xffff00, F: 0x00ff00, B: 0x0000ff, L: 0xffa500, R: 0xff0000
-  };
-  for (let cube of cubeState) {
-    if (cube.position.y === 1 && cube.colors[2] === targetColors.U) score++;
-    if (cube.position.y === -1 && cube.colors[3] === targetColors.D) score++;
-    if (cube.position.z === 1 && cube.colors[4] === targetColors.F) score++;
-    if (cube.position.z === -1 && cube.colors[5] === targetColors.B) score++;
-    if (cube.position.x === -1 && cube.colors[1] === targetColors.L) score++;
-    if (cube.position.x === 1 && cube.colors[0] === targetColors.R) score++;
-  }
-  return score;
-}
+      function detectarCaraFrontal() {
+        const camara = [0, 0, -1];
+        let maxDot = -Infinity;
+        let caraVisible = null;
+        for (const nombre in normalesOriginales) {
+          const rotada = rotarVector(normalesOriginales[nombre]);
+          const dot = productoEscalar(rotada, camara);
+          if (dot > maxDot) {
+            maxDot = dot;
+            caraVisible = nombre;
+          }
+        }
+        return caraVisible;
+      }
 
-function bestMove() {
-  const moves = ["U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"];
-  let bestScore = -Infinity, bestMove = null;
-  for (let move of moves) {
-    const tempState = cubeState.map(cube => ({
-      position: { ...cube.position },
-      colors: [...cube.colors]
-    }));
-    moveQueue = [move];
-    executeMove(move);
-    const score = evaluateCubeState();
-    cubeState = tempState;
-    updateCubeState();
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
-    }
-  }
-  return bestMove;
-}
+      function normalizeAngle(angle) {
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle < -Math.PI) angle += 2 * Math.PI;
+        return angle;
+      }
 
-function startBot() {
-  if (DEMO_MODE) return;
-  DEMO_MODE = true;
-  document.getElementById('status').textContent = 'Bot resolviendo...';
-  function botLoop() {
-    if (!DEMO_MODE || evaluateCubeState() === 54) {
-      DEMO_MODE = false;
-      document.getElementById('status').textContent = '¡Cubo resuelto!';
-      return;
-    }
-    const move = bestMove();
-    if (move) {
-      makeMove(move);
-      setTimeout(botLoop, isAnimating ? 600 : 100);
-    }
-  }
-  botLoop();
-}
+      function animateToFace(faceName) {
+        const target = angulosObjetivo[faceName];
+        startRotationX = rotationX;
+        startRotationY = rotationY;
+        targetRotationX = target.rotationX;
+        targetRotationY = normalizeAngle(target.rotationY);
+        if (Math.abs(targetRotationY - startRotationY) > Math.PI) {
+          if (targetRotationY > startRotationY) {
+            targetRotationY -= 2 * Math.PI;
+          } else {
+            targetRotationY += 2 * Math.PI;
+          }
+        }
+        animationStartTime = performance.now();
+        isAnimating = true;
+        requestAnimationFrame(animate);
+      }
 
-window.onload = init;
-</script>
+      function animate() {
+        if (isAnimating) {
+          const currentTime = performance.now();
+          const elapsed = Math.min((currentTime - animationStartTime) / ANIMATION_DURATION, 1);
+          const t = elapsed;
+          rotationX = startRotationX + (targetRotationX - startRotationX) * t;
+          rotationY = startRotationY + (targetRotationY - startRotationY) * t;
+          if (elapsed >= 1) {
+            isAnimating = false;
+            rotationX = targetRotationX;
+            rotationY = targetRotationY;
+          }
+          drawCube();
+          if (isAnimating) requestAnimationFrame(animate);
+        }
+      }
+
+      function project(vertex) {
+        const [x, y, z] = vertex;
+        const zAdjusted = z + cameraDistance;
+        if (zAdjusted <= 0) return [0, 0];
+        const factor = fov / zAdjusted;
+        const scale = Math.min(canvas.width, canvas.height) * 0.3;
+        return [
+          x * factor * scale + canvas.width / 2,
+          -y * factor * scale + canvas.height / 2
+        ];
+      }
+
+      function rotateVertex([x, y, z]) {
+        let newX = x * Math.cos(rotationY) - z * Math.sin(rotationY);
+        let newZ = x * Math.sin(rotationY) + z * Math.cos(rotationY);
+        let newY = y * Math.cos(rotationX) - newZ * Math.sin(rotationX);
+        newZ = y * Math.sin(rotationX) + newZ * Math.cos(rotationX);
+        return [newX, newY, newZ];
+      }
+
+      function getGridPoints(v0, v1, v2, v3) {
+        const points = [];
+        for (let i = 0; i <= 3; i++) {
+          const t = i / 3;
+          const p0 = [(1 - t) * v0[0] + t * v1[0], (1 - t) * v0[1] + t * v1[1]];
+          const p1 = [(1 - t) * v3[0] + t * v2[0], (1 - t) * v3[1] + t * v2[1]];
+          for (let j = 0; j <= 3; j++) {
+            const s = j / 3;
+            points.push([(1 - s) * p0[0] + s * p1[0], (1 - s) * p0[1] + s * p1[1]]);
+          }
+        }
+        return points;
+      }
+
+      function drawFace(face, vertices2D) {
+        const [v0, v1, v2, v3] = vertices2D;
+        const points = getGridPoints(v0, v1, v2, v3);
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const idx = i * 4 + j;
+            const p0 = points[idx];
+            const p1 = points[idx + 1];
+            const p2 = points[idx + 5];
+            const p3 = points[idx + 4];
+            const stickerIndex = i * 3 + j;
+            const sticker = estadoCubo[face.name][stickerIndex];
+            ctx.beginPath();
+            ctx.moveTo(p0[0], p0[1]);
+            ctx.lineTo(p1[0], p1[1]);
+            ctx.lineTo(p2[0], p2[1]);
+            ctx.lineTo(p3[0], p3[1]);
+            ctx.closePath();
+            ctx.fillStyle = sticker.color;
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+        }
+      }
+
+      function drawCube() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const projectedFaces = faces.map(face => {
+          const vertices3D = face.indices.map(i => rotateVertex(vertices[i]));
+          const avgZ = vertices3D.reduce((sum, v) => sum + v[2], 0) / 4;
+          return { face, vertices2D: vertices3D.map(project), avgZ };
+        }).sort((a, b) => b.avgZ - a.avgZ);
+        projectedFaces.forEach(({ face, vertices2D }) => {
+          drawFace(face, vertices2D);
+        });
+        const caraFrontal = detectarCaraFrontal();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`Cara visible: ${caraFrontal.toUpperCase()}`, 20, canvas.height - 20);
+      }
+
+      canvas.addEventListener('mousedown', e => {
+        if (!isAnimating) {
+          isDragging = true;
+          lastMouseX = e.clientX;
+          lastMouseY = e.clientY;
+        }
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        if (isDragging && !isAnimating) {
+          const dx = e.clientX - lastMouseX;
+          const dy = e.clientY - lastMouseY;
+          rotationY += dx * 0.005;
+          rotationX += dy * 0.005;
+          rotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, rotationX));
+          lastMouseX = e.clientX;
+          lastMouseY = e.clientY;
+          drawCube();
+        }
+      });
+
+      canvas.addEventListener('mouseup', () => isDragging = false);
+      canvas.addEventListener('mouseleave', () => isDragging = false);
+
+      canvas.addEventListener('wheel', e => {
+        if (!isAnimating) {
+          e.preventDefault();
+          cameraDistance += e.deltaY * 0.01;
+          cameraDistance = Math.max(3, Math.min(10, cameraDistance));
+          drawCube();
+        }
+      });
+
+      faceSelector.addEventListener('change', () => {
+        animateToFace(faceSelector.value);
+      });
+
+      scrambleButton.addEventListener('click', scrambleCube);
+      solveButton.addEventListener('click', solveCube);
+
+      drawCube();
+    });
+  </script>
 </body>
 </html>
