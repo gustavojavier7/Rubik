@@ -152,6 +152,13 @@
         <button data-move="z_prime">z'</button>
       </div>
     </div>
+    <div class="control-group">
+      <div class="button-row">
+        <button id="scrambleButton">Mezclar cubo</button>
+        <button id="solveButton">Resolver puzle</button>
+      </div>
+      <div id="solverOutput" style="font-size:12px; white-space:pre-wrap;"></div>
+    </div>
   </div>
   <canvas id="canvas"></canvas>
   <script>
@@ -160,6 +167,10 @@
       const ctx = canvas.getContext('2d');
       const faceSelector = document.getElementById('faceSelector');
       const controlsContainer = document.getElementById('controls-container');
+      const scrambleButton = document.getElementById('scrambleButton');
+      const solveButton = document.getElementById('solveButton');
+      const solverOutput = document.getElementById('solverOutput');
+      let scrambleMoves = [];
       
       // Ajustar tamaño del canvas
       function resizeCanvas() {
@@ -446,6 +457,58 @@
         isAnimating = false;
       }
 
+      function executeMove(move) {
+        const [moveType, prime] = move.split('_');
+        const direction = prime === 'prime' ? 'counterClockwise' : 'clockwise';
+        switch (moveType) {
+          case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
+            const faceName = moveToFaceMap[moveType];
+            if (faceName) {
+              rotateFace(faceName, direction);
+            }
+            break;
+          case 'M': case 'E': case 'S':
+            rotateMiddleLayer(moveType, direction);
+            break;
+          case 'x': case 'y': case 'z':
+            rotateCube(moveType, direction);
+            break;
+        }
+      }
+
+      function applyMovesSequentially(moves, index = 0, callback) {
+        if (index >= moves.length) {
+          if (callback) callback();
+          return;
+        }
+        executeMove(moves[index]);
+        setTimeout(() => applyMovesSequentially(moves, index + 1, callback), 150);
+      }
+
+      function scrambleCube() {
+        scrambleMoves = [];
+        const base = ['U','D','L','R','F','B'];
+        for (let i = 0; i < 20; i++) {
+          let m = base[Math.floor(Math.random() * base.length)];
+          if (Math.random() < 0.5) m += '_prime';
+          scrambleMoves.push(m);
+        }
+        solverOutput.textContent = 'Scramble: ' + scrambleMoves.join(' ');
+        applyMovesSequentially(scrambleMoves);
+      }
+
+      function solveCube() {
+        if (!scrambleMoves.length) {
+          solverOutput.textContent = 'No hay historial de mezclado.';
+          return;
+        }
+        const solution = scrambleMoves.slice().reverse().map(m =>
+          m.endsWith('_prime') ? m.replace('_prime', '') : m + '_prime'
+        );
+        solverOutput.textContent = 'Soluci\u00f3n: ' + solution.join(' ');
+        applyMovesSequentially(solution);
+      }
+
       controlsContainer.addEventListener('click', (e) => {
         const button = e.target.closest('button[data-move]');
         if (button) {
@@ -470,6 +533,9 @@
           }
         }
       });
+
+      scrambleButton.addEventListener('click', scrambleCube);
+      solveButton.addEventListener('click', solveCube);
 
       function rotarVector([x, y, z]) {
         let newX = x * Math.cos(rotationY) - z * Math.sin(rotationY);
