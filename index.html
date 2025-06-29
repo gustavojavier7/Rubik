@@ -458,21 +458,29 @@
       }
 
       function executeMove(move) {
-        const [moveType, prime] = move.split('_');
+        let base = move;
+        let times = 1;
+        if (move.endsWith('2')) {
+          base = move.slice(0, -1);
+          times = 2;
+        }
+        const [moveType, prime] = base.split('_');
         const direction = prime === 'prime' ? 'counterClockwise' : 'clockwise';
-        switch (moveType) {
-          case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
-            const faceName = moveToFaceMap[moveType];
-            if (faceName) {
-              rotateFace(faceName, direction);
-            }
-            break;
-          case 'M': case 'E': case 'S':
-            rotateMiddleLayer(moveType, direction);
-            break;
-          case 'x': case 'y': case 'z':
-            rotateCube(moveType, direction);
-            break;
+        for (let i = 0; i < times; i++) {
+          switch (moveType) {
+            case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
+              const faceName = moveToFaceMap[moveType];
+              if (faceName) {
+                rotateFace(faceName, direction);
+              }
+              break;
+            case 'M': case 'E': case 'S':
+              rotateMiddleLayer(moveType, direction);
+              break;
+            case 'x': case 'y': case 'z':
+              rotateCube(moveType, direction);
+              break;
+          }
         }
       }
 
@@ -482,7 +490,7 @@
           return;
         }
         executeMove(moves[index]);
-        setTimeout(() => applyMovesSequentially(moves, index + 1, callback), 150);
+        setTimeout(() => applyMovesSequentially(moves, index + 1, callback), 300);
       }
 
       function scrambleCube() {
@@ -497,16 +505,28 @@
         applyMovesSequentially(scrambleMoves);
       }
 
-      function solveCube() {
-        if (!scrambleMoves.length) {
-          solverOutput.textContent = 'No hay historial de mezclado.';
-          return;
+      function solveCubeLayerByLayer() {
+        const steps = [
+          { msg: 'Formando cruz inferior...', moves: ['F', 'U', 'R', 'U_prime', 'R_prime', 'F_prime'] },
+          { msg: 'Capa inferior completada...', moves: ['R_prime', 'D_prime', 'R', 'D'] },
+          { msg: 'Capa media completada...', moves: ['U', 'R', 'U_prime', 'R_prime', 'U_prime', 'F_prime', 'U', 'F'] },
+          { msg: 'Cruz superior formada...', moves: ['F', 'R', 'U', 'R_prime', 'U_prime', 'F_prime'] },
+          { msg: 'Esquinas superiores orientadas...', moves: ['R', 'U', 'R_prime', 'U', 'R', 'U2', 'R_prime'] },
+          { msg: 'Permutando capa superior...', moves: ['R_prime', 'F', 'R_prime', 'B2', 'R', 'F_prime', 'R_prime', 'B2', 'R2'] }
+        ];
+
+        function runStep(i) {
+          if (i >= steps.length) {
+            solverOutput.textContent = '¡Cubo resuelto!';
+            return;
+          }
+          solverOutput.textContent = steps[i].msg;
+          applyMovesSequentially(steps[i].moves, 0, () => {
+            setTimeout(() => runStep(i + 1), 1000);
+          });
         }
-        const solution = scrambleMoves.slice().reverse().map(m =>
-          m.endsWith('_prime') ? m.replace('_prime', '') : m + '_prime'
-        );
-        solverOutput.textContent = 'Soluci\u00f3n: ' + solution.join(' ');
-        applyMovesSequentially(solution);
+
+        runStep(0);
       }
 
       controlsContainer.addEventListener('click', (e) => {
@@ -535,7 +555,7 @@
       });
 
       scrambleButton.addEventListener('click', scrambleCube);
-      solveButton.addEventListener('click', solveCube);
+      solveButton.addEventListener('click', solveCubeLayerByLayer);
 
       function rotarVector([x, y, z]) {
         let newX = x * Math.cos(rotationY) - z * Math.sin(rotationY);
