@@ -4,6 +4,12 @@
 
   Cube = this.Cube || require('./cube');
 
+  // NUEVO: Configuración de Logging
+  let LOG_LEVEL = 'NONE'; // Por defecto no hay logs
+  Cube.setLogLevel = function(level) {
+    LOG_LEVEL = level;
+  };
+
   // Centers
   [U, R, F, D, L, B] = [0, 1, 2, 3, 4, 5];
 
@@ -813,8 +819,14 @@
     solution = null;
     phase1search = function(state) {
       var depth, m, ref, results;
+      if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+        console.log('[INFO] Fase 1: Buscando reducir el cubo a un estado G1.');
+      }
       results = [];
       for (depth = m = 1, ref = maxDepth; (1 <= ref ? m <= ref : m >= ref); depth = 1 <= ref ? ++m : --m) {
+        if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+            console.log(`[INFO]   -> Profundidad de búsqueda actual: ${depth}...`);
+        }
         phase1(state, depth);
         if (solution !== null) {
           break;
@@ -832,6 +844,10 @@
           // last move in phase 1, because phase 2 would then repeat the
           // same move.
           if (state.lastMove === null || (ref = state.lastMove, indexOf.call(allMoves2, ref) < 0)) {
+            if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+                console.log(`[INFO] ¡Éxito! Fase 1 resuelta en ${state.depth} movimientos.`);
+                console.log('[INFO] -----------------------------------------');
+            }
             return phase2search(state);
           }
         }
@@ -841,6 +857,9 @@
           results = [];
           for (m = 0, len = ref1.length; m < len; m++) {
             move = ref1[m];
+             if (LOG_LEVEL === 'VERBOSE') {
+                console.log(`[VERBOSE] [P1|d=${depth}] Probando ${moveNames[move]}... Heurística(minDist): ${state.minDist1()}. Continuando (${state.minDist1()} <= ${depth}).`);
+            }
             next = state.next1(move);
             phase1(next, depth - 1);
             freeStates.push(next);
@@ -856,10 +875,19 @@
     };
     phase2search = function(state) {
       var depth, m, ref, results;
+      if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+        console.log('[INFO] Fase 2: Buscando solución final desde el estado G1.');
+      }
       // Initialize phase 2 coordinates
       state.init2();
+       if (LOG_LEVEL === 'VERBOSE') {
+        console.log(`[VERBOSE] Inicializando coords de Fase 2: {parity: ${state.parity}, URFtoDLF: ${state.URFtoDLF}, FRtoBR: ${state.FRtoBR}, URtoDF: ${state.URtoDF}}`);
+      }
       results = [];
       for (depth = m = 1, ref = maxDepth - state.depth; (1 <= ref ? m <= ref : m >= ref); depth = 1 <= ref ? ++m : --m) {
+        if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+            console.log(`[INFO]   -> Profundidad de búsqueda actual: ${depth}...`);
+        }
         phase2(state, depth);
         if (solution !== null) {
           break;
@@ -873,6 +901,10 @@
       var len, m, move, next, ref, results;
       if (depth === 0) {
         if (state.minDist2() === 0) {
+          if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+            console.log(`[INFO] ¡Éxito! Fase 2 resuelta en ${state.depth - (solution ? solution.split(' ').length -1 : 0)} movimientos.`);
+            console.log('[INFO] -----------------------------------------');
+          }
           return solution = state.solution();
         }
       } else if (depth > 0) {
@@ -881,6 +913,9 @@
           results = [];
           for (m = 0, len = ref.length; m < len; m++) {
             move = ref[m];
+            if (LOG_LEVEL === 'VERBOSE') {
+                console.log(`[VERBOSE] [P2|d=${depth}] Probando ${moveNames[move]}... Heurística(minDist): ${state.minDist2()}. Continuando (${state.minDist2()} <= ${depth}).`);
+            }
             next = state.next2(move);
             phase2(next, depth - 1);
             freeStates.push(next);
@@ -903,10 +938,20 @@
       return results;
     })();
     state = freeStates.pop().init(this);
+    if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+        console.log('[INFO] Iniciando resolución del cubo.');
+    }
     phase1search(state);
     freeStates.push(state);
     if (solution == null) {
+      if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+        console.log('[INFO] No se pudo encontrar una solución.');
+      }
       return null;
+    }
+    if (LOG_LEVEL === 'INFO' || LOG_LEVEL === 'VERBOSE') {
+        console.log(`[INFO] Solución encontrada: ${solution.trim()}`);
+        console.log('[INFO] Aplicando solución a la interfaz...');
     }
     // Trim the trailing space and return
     return solution.trim();
