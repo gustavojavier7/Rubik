@@ -340,6 +340,82 @@
         drawCube();
       }
 
+      function rotateMiddleLayer(layerType, direction) {
+        const cycles = {
+          M: { // Moves like L, but direction is from R to L (x-axis negative)
+            clockwise: [['up', [1, 4, 7]], ['back', [7, 4, 1]], ['down', [1, 4, 7]], ['front', [1, 4, 7]]],
+            counterClockwise: [['up', [1, 4, 7]], ['front', [1, 4, 7]], ['down', [1, 4, 7]], ['back', [7, 4, 1]]]
+          },
+          E: { // Moves like D, but direction is from U to D (y-axis negative)
+            clockwise: [['front', [3, 4, 5]], ['left', [3, 4, 5]], ['back', [5, 4, 3]], ['right', [3, 4, 5]]],
+            counterClockwise: [['front', [3, 4, 5]], ['right', [3, 4, 5]], ['back', [5, 4, 3]], ['left', [3, 4, 5]]]
+          },
+          S: { // Moves like F (z-axis positive)
+            clockwise: [['up', [3, 4, 5]], ['right', [1, 4, 7]], ['down', [5, 4, 3]], ['left', [7, 4, 1]]],
+            counterClockwise: [['up', [3, 4, 5]], ['left', [7, 4, 1]], ['down', [5, 4, 3]], ['right', [1, 4, 7]]]
+          }
+        }[layerType];
+
+        const cycle = cycles[direction];
+        const tempColors = cycle[0][1].map(idx => estadoCubo[cycle[0][0]][idx].color);
+
+        for (let i = 0; i < cycle.length; i++) {
+          const [currentFace, currentIndices] = cycle[i];
+          const [nextFace, nextIndices] = cycle[(i + 1) % cycle.length];
+          
+          if (i === cycle.length - 1) {
+            currentIndices.forEach((idx, j) => {
+              estadoCubo[currentFace][idx] = {color: tempColors[j]};
+            });
+          } else {
+            currentIndices.forEach((idx, j) => {
+              estadoCubo[currentFace][idx] = {color: estadoCubo[nextFace][nextIndices[j]].color};
+            });
+          }
+        }
+        drawCube();
+      }
+
+      function rotateCube(axis, direction) {
+        const tempCubeState = JSON.parse(JSON.stringify(estadoCubo));
+        let newFaceMapping = {};
+
+        if (axis === 'x') {
+          if (direction === 'clockwise') {
+            newFaceMapping = { front: tempCubeState.down, down: tempCubeState.back, back: tempCubeState.up, up: tempCubeState.front };
+            rotateFaceStickers('left', 'counterClockwise');
+            rotateFaceStickers('right', 'clockwise');
+          } else {
+            newFaceMapping = { front: tempCubeState.up, up: tempCubeState.back, back: tempCubeState.down, down: tempCubeState.front };
+            rotateFaceStickers('left', 'clockwise');
+            rotateFaceStickers('right', 'counterClockwise');
+          }
+        } else if (axis === 'y') {
+          if (direction === 'clockwise') {
+            newFaceMapping = { front: tempCubeState.right, right: tempCubeState.back, back: tempCubeState.left, left: tempCubeState.front };
+            rotateFaceStickers('up', 'clockwise');
+            rotateFaceStickers('down', 'counterClockwise');
+          } else {
+            newFaceMapping = { front: tempCubeState.left, left: tempCubeState.back, back: tempCubeState.right, right: tempCubeState.front };
+            rotateFaceStickers('up', 'counterClockwise');
+            rotateFaceStickers('down', 'clockwise');
+          }
+        } else if (axis === 'z') {
+          if (direction === 'clockwise') {
+            newFaceMapping = { up: tempCubeState.left, left: tempCubeState.down, down: tempCubeState.right, right: tempCubeState.up };
+            rotateFaceStickers('front', 'clockwise');
+            rotateFaceStickers('back', 'counterClockwise');
+          } else {
+            newFaceMapping = { up: tempCubeState.right, right: tempCubeState.down, down: tempCubeState.left, left: tempCubeState.up };
+            rotateFaceStickers('front', 'counterClockwise');
+            rotateFaceStickers('back', 'clockwise');
+          }
+        }
+        
+        Object.assign(estadoCubo, newFaceMapping);
+        drawCube();
+      }
+
       function executeMove(move) {
         let base = move;
         let times = 1;
@@ -349,9 +425,18 @@
         }
         const [moveType, prime] = base.split('_');
         const direction = prime === 'prime' ? 'counterClockwise' : 'clockwise';
+        
         for (let i = 0; i < times; i++) {
-            if (moveToFaceMap[moveType]) {
-                rotateFace(moveToFaceMap[moveType], direction);
+            switch (moveType) {
+                case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
+                    rotateFace(moveToFaceMap[moveType], direction);
+                    break;
+                case 'M': case 'E': case 'S':
+                    rotateMiddleLayer(moveType, direction);
+                    break;
+                case 'x': case 'y': case 'z':
+                    rotateCube(moveType, direction);
+                    break;
             }
         }
       }
@@ -430,6 +515,9 @@
       scrambleButton.addEventListener('click', scrambleCube);
       solveButton.addEventListener('click', solveCube);
       
+      // Prepara el resolutor calculando las tablas de movimientos y poda.
+      Cube.initSolver();
+
       function drawCube() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const projectedFaces = faces.map(face => {
