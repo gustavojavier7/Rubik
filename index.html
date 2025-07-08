@@ -1,0 +1,65 @@
+!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vanilla JS Rubik's Cube Algorithm Solver</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-container">
+    <header class="page-header">
+      <p>Arrastra para girar · Rueda para zoom</p>
+    </header>
+
+    <!-- Controls Sidebar -->
+    <aside id="controls-container" class="controls-sidebar">
+      <h1 class="sidebar-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <span>Vanilla JS Cube</span>
+      </h1>
+      <div class="notice-box">
+         <strong>?? Solver Local Integrado</strong>
+         <p>Algoritmo de resolución paso a paso (Beginner's Method).</p>
+      </div>
+
+      <div class="controls-group">
+        <div class="button-group">
+          <button id="scramble-btn" class="button button-scramble">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm6 5a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1V8a1 1 0 011-1zm-4 7a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1zM15 2a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0V6h-1a1 1 0 110-2h1V3a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+            <span>Mezclar</span>
+          </button>
+          <button id="reset-btn" class="button button-reset">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.51A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.51-1.276z" clip-rule="evenodd" /></svg>
+            <span>Reset</span>
+          </button>
+        </div>
+        <button id="solve-btn" class="button button-solve">
+          <span id="solve-btn-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V5a1 1 0 00-1.447-.894l-4 2A1 1 0 0011 7v10zM4 17a1 1 0 001.447.894l4-2A1 1 0 0010 15V5a1 1 0 00-1.447-.894l-4 2A1 1 0 004 7v10z" /></svg>
+          </span>
+          <span id="solve-btn-text">Resolver</span>
+        </button>
+      </div>
+
+      <!-- Move Buttons -->
+      <div id="move-buttons-container" class="controls-group"></div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="canvas-container">
+        <canvas id="cube-canvas"></canvas>
+      </div>
+      <div class="log-panel">
+        <h3>Consola</h3>
+        <div id="log-container"></div>
+        <div id="log-end"></div>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
