@@ -195,16 +195,18 @@ function setLoadingState(loading) {
   }
 }
 
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  return Math.min(rect.width, rect.height);
+}
+
 function drawCube() {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  
-  const parent = canvas.parentElement;
-  // This is the key change for aspect ratio correction
-  const rect = parent.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  const size = Math.min(rect.width, rect.height);
+
+  const size = resizeCanvas();
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -428,42 +430,40 @@ function solveLocally() {
 
 
 // --- INITIALIZATION ---
-function init() {
-  // Create move buttons
+function createMoveButtons() {
   for (const [title, moves] of Object.entries(MOVE_GROUPS)) {
     const groupDiv = document.createElement('div');
     groupDiv.className = 'move-buttons-group';
-    
     const titleEl = document.createElement('h3');
     titleEl.textContent = title;
     groupDiv.appendChild(titleEl);
 
     const buttonRow = document.createElement('div');
     buttonRow.className = 'move-buttons-row';
-    
+
     moves.forEach(move => {
       const button = document.createElement('button');
       button.textContent = move;
       button.className = 'move-button';
       button.onclick = () => {
-          if (isLoading) return;
-          addLog(`Movimiento: ${move}`, 'VERBOSE');
-          applyMove(move);
-          drawCube();
+        if (isLoading) return;
+        addLog(`Movimiento: ${move}`, 'VERBOSE');
+        applyMove(move);
+        drawCube();
       };
       buttonRow.appendChild(button);
     });
-    
+
     groupDiv.appendChild(buttonRow);
     moveButtonsContainer.appendChild(groupDiv);
   }
+}
 
-  // Main action listeners
+function setupEventListeners() {
   scrambleBtn.addEventListener('click', handleScramble);
   resetBtn.addEventListener('click', handleReset);
   solveBtn.addEventListener('click', handleSolve);
 
-  // Canvas interaction listeners
   canvas.addEventListener('mousedown', e => {
     isDragging = true;
     lastMousePos = { x: e.clientX, y: e.clientY };
@@ -485,13 +485,16 @@ function init() {
     cameraDistance = Math.max(4, Math.min(10, cameraDistance + e.deltaY * 0.01));
     drawCube();
   });
-  
-  window.addEventListener('resize', drawCube);
 
-  // First draw
-  addLog("Bienvenido al Cubo de Rubik con JS", 'SUCCESS');
-  addLog("Usa el rat�n para girar el cubo y la rueda para hacer zoom.", 'INFO');
-  drawCube();
+  window.addEventListener('resize', drawCube);
 }
 
+function init() {
+  createMoveButtons();
+  setupEventListeners();
+
+  addLog("Bienvenido al Cubo de Rubik con JS", 'SUCCESS');
+  addLog("Usa el ratón para girar el cubo y la rueda para hacer zoom.", 'INFO');
+  drawCube();
+}
 document.addEventListener('DOMContentLoaded', init);
