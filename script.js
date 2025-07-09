@@ -106,10 +106,12 @@ function applyCubeRotation(state, axis, clockwise) {
         const sourceFace = faceOrder[loop[i]];
         newState[face] = sourceState[sourceFace];
         if (axis === 'x') {
-            if (face === 'B' || face === 'D') newState[face] = rotateFace(rotateFace(newState[face], true), true);
+            // For x rotation, all cycling faces (U,F,D,B) need to be rotated 90 deg CW
+            newState[face] = rotateFace(newState[face], true);
         }
         if (axis === 'z') {
-            newState[face] = rotateFace(newState[face], !clockwise);
+            // For z rotation, all cycling faces (U,L,D,R) need to be rotated 90 deg CW if clockwise, 90 deg CCW if anti-clockwise
+            newState[face] = rotateFace(newState[face], clockwise);
         }
     });
 
