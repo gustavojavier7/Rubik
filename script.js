@@ -9,10 +9,14 @@ const faceNames = ['U', 'R', 'F', 'D', 'L', 'B'];
 const centerColors = { U: 'W', R: 'R', F: 'G', D: 'Y', L: 'O', B: 'B' };
 const colorToFace = { W: 'U', R: 'R', G: 'F', Y: 'D', O: 'L', B: 'B' };
 
-const INITIAL_CUBE_STATE = {
-  U: Array(9).fill('W'), R: Array(9).fill('R'), F: Array(9).fill('G'),
-  D: Array(9).fill('Y'), L: Array(9).fill('O'), B: Array(9).fill('B'),
-};
+const INITIAL_CUBE_STATE = {};
+let currentStickerId = 0;
+faceNames.forEach(faceName => {
+  INITIAL_CUBE_STATE[faceName] = Array(9).fill(null).map(() => ({
+    id: currentStickerId++,
+    color: centerColors[faceName] // Use color abbreviation
+  }));
+});
 
 const MOVE_GROUPS = {
   "Movimientos de Cara": ["U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"],
@@ -40,6 +44,13 @@ const solveBtnText = document.getElementById('solve-btn-text');
 const solveBtnIcon = document.getElementById('solve-btn-icon');
 const moveButtonsContainer = document.getElementById('move-buttons-container');
 
+// Modal elements
+const stickerSearchModal = document.getElementById('sticker-search-modal');
+const closeButton = stickerSearchModal.querySelector('.close-button');
+const stickerIdInput = document.getElementById('sticker-id-input');
+const searchStickerBtn = document.getElementById('search-sticker-btn');
+const searchResult = document.getElementById('search-result');
+
 // --- CUBE LOGIC ---
 function cloneState(state) {
   return JSON.parse(JSON.stringify(state));
@@ -47,7 +58,6 @@ function cloneState(state) {
 
 function rotateFace(face, clockwise) {
   const newFace = [...face];
-  const indices = [0, 1, 2, 5, 8, 7, 6, 3];
   const cornerIndices = [0, 2, 8, 6];
   const edgeIndices = [1, 5, 7, 3];
   
@@ -265,7 +275,7 @@ function drawFace(ctx, faceName, faceVertices, size) {
       ctx.lineTo(p2[0], p2[1]);
       ctx.lineTo(p3[0], p3[1]);
       ctx.closePath();
-      ctx.fillStyle = COLORS[cubeState[faceName][i * 3 + j]];
+      ctx.fillStyle = COLORS[cubeState[faceName][i * 3 + j].color];
       ctx.fill();
       ctx.strokeStyle = '#111827';
       ctx.lineWidth = size * 0.008;
@@ -431,6 +441,46 @@ function solveLocally() {
 }
 
 
+function findStickerLocation(id) {
+  for (const faceName of faceNames) {
+    for (let i = 0; i < cubeState[faceName].length; i++) {
+      if (cubeState[faceName][i].id === id) {
+        return { face: faceName, index: i, color: cubeState[faceName][i].color };
+      }
+    }
+  }
+  return null;
+}
+
+// --- MODAL LOGIC ---
+function openStickerSearchModal() {
+  stickerSearchModal.style.display = 'block';
+  stickerIdInput.value = '';
+  searchResult.textContent = '';
+}
+
+function closeStickerSearchModal() {
+  stickerSearchModal.style.display = 'none';
+}
+
+function handleSearchSticker() {
+  const id = parseInt(stickerIdInput.value);
+  if (isNaN(id) || id < 0 || id > 53) {
+    searchResult.textContent = 'Por favor, introduce un ID válido (0-53).';
+    searchResult.style.color = 'var(--color-log-error)';
+    return;
+  }
+
+  const location = findStickerLocation(id);
+  if (location) {
+    searchResult.textContent = `El sticker ID ${id} (color ${location.color}) está en la cara ${location.face} en la posición ${location.index}.`;
+    searchResult.style.color = 'var(--color-log-success)';
+  } else {
+    searchResult.textContent = `No se encontró el sticker ID ${id}.`;
+    searchResult.style.color = 'var(--color-log-error)';
+  }
+}
+
 // --- INITIALIZATION ---
 function createMoveButtons() {
   for (const [title, moves] of Object.entries(MOVE_GROUPS)) {
@@ -462,9 +512,29 @@ function createMoveButtons() {
 }
 
 function setupEventListeners() {
+  // Main action listeners
   scrambleBtn.addEventListener('click', handleScramble);
   resetBtn.addEventListener('click', handleReset);
   solveBtn.addEventListener('click', handleSolve);
+
+  // Modal listeners
+  closeButton.addEventListener('click', closeStickerSearchModal);
+  searchStickerBtn.addEventListener('click', handleSearchSticker);
+  window.addEventListener('click', (event) => {
+    if (event.target == stickerSearchModal) {
+      closeStickerSearchModal();
+    }
+  });
+
+  // Add a button to open the search modal
+  const searchModalBtn = document.createElement('button');
+  searchModalBtn.textContent = 'Buscar Sticker';
+  searchModalBtn.className = 'button button-solve'; // Reusing solve button style
+  searchModalBtn.style.marginTop = '1rem';
+  searchModalBtn.addEventListener('click', openStickerSearchModal);
+  document.getElementById('controls-container').appendChild(searchModalBtn);
+
+  // Canvas interaction listeners
 
   canvas.addEventListener('mousedown', e => {
     isDragging = true;
