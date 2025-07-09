@@ -200,11 +200,13 @@ function drawCube() {
   if (!ctx) return;
   
   const parent = canvas.parentElement;
-  const size = Math.min(parent.clientWidth, parent.clientHeight);
-  canvas.width = size;
-  canvas.height = size;
-  
-  ctx.clearRect(0, 0, size, size);
+  // This is the key change for aspect ratio correction
+  const rect = parent.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const size = Math.min(rect.width, rect.height);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const vertices = [[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
   const faces = [
@@ -223,7 +225,8 @@ function drawCube() {
   const project = ([x, y, z]) => {
     const fov = size * 0.8;
     const factor = fov / (z + cameraDistance);
-    return [x * factor + size / 2, -y * factor + size / 2];
+    // Center the projection in the actual canvas dimensions
+    return [x * factor + canvas.width / 2, -y * factor + canvas.height / 2];
   };
 
   const projectedFaces = faces.map(face => {
@@ -294,10 +297,10 @@ function handleReset() {
 
 async function handleSolve() {
   if (isSolved()) {
-    addLog("El cubo ya está resuelto.", 'INFO');
+    addLog("El cubo ya estï¿½ resuelto.", 'INFO');
     return;
   }
-  addLog("Iniciando resolución con algoritmo local...", 'INFO');
+  addLog("Iniciando resoluciï¿½n con algoritmo local...", 'INFO');
   setLoadingState(true);
   
   // Allow UI to update before blocking with calculations
@@ -305,13 +308,13 @@ async function handleSolve() {
       try {
           const solution = solveLocally();
           if (!solution || solution.length === 0) {
-              addLog("El algoritmo no pudo encontrar una solución.", 'ERROR');
+              addLog("El algoritmo no pudo encontrar una soluciï¿½n.", 'ERROR');
               setLoadingState(false);
               return;
           }
 
-          addLog(`Solución generada: ${solution.length} movimientos.`, 'SUCCESS');
-          addLog("Aplicando solución...", 'INFO');
+          addLog(`Soluciï¿½n generada: ${solution.length} movimientos.`, 'SUCCESS');
+          addLog("Aplicando soluciï¿½n...", 'INFO');
           
           // Must reset cube state before applying solution moves
           // because the solver manipulates a temporary state.
@@ -322,7 +325,7 @@ async function handleSolve() {
               if (index >= solution.length) {
                   setLoadingState(false);
                   const finalStatus = isSolved();
-                  addLog(finalStatus ? '¡Cubo resuelto!' : 'El algoritmo no resolvió el cubo.', finalStatus ? 'SUCCESS' : 'ERROR');
+                  addLog(finalStatus ? 'ï¿½Cubo resuelto!' : 'El algoritmo no resolviï¿½ el cubo.', finalStatus ? 'SUCCESS' : 'ERROR');
                   return;
               }
               applyMove(solution[index]);
@@ -332,8 +335,8 @@ async function handleSolve() {
           applySolutionMoves(0);
 
       } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Un error desconocido ocurrió.";
-          addLog(`Error durante la resolución: ${errorMessage}`, 'ERROR');
+          const errorMessage = error instanceof Error ? error.message : "Un error desconocido ocurriï¿½.";
+          addLog(`Error durante la resoluciï¿½n: ${errorMessage}`, 'ERROR');
           console.error(error);
           setLoadingState(false);
       }
@@ -487,7 +490,7 @@ function init() {
 
   // First draw
   addLog("Bienvenido al Cubo de Rubik con JS", 'SUCCESS');
-  addLog("Usa el ratón para girar el cubo y la rueda para hacer zoom.", 'INFO');
+  addLog("Usa el ratï¿½n para girar el cubo y la rueda para hacer zoom.", 'INFO');
   drawCube();
 }
 

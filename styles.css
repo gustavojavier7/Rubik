@@ -39,18 +39,12 @@ body {
 /* --- Layout --- */
 .page-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100vw;
   height: 100vh;
-  padding: 0.5rem;
+  padding: 1rem;
   gap: 1rem;
   box-sizing: border-box;
-}
-@media (min-width: 768px) { /* md */
-  .page-container {
-    flex-direction: row;
-    padding: 1rem;
-  }
 }
 
 .main-content {
@@ -255,32 +249,30 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow-2xl);
   border: 1px solid var(--color-gray-700);
+  /* Ensure the container is responsive */
+  position: relative;
 }
 #cube-canvas {
+  display: block; /* remove bottom space */
+  /* Make canvas fill its container */
+  position: absolute;
   width: 100%;
   height: 100%;
-  display: block; /* remove bottom space */
 }
 
 .log-panel {
   flex-shrink: 0; /* Don't shrink */
-  height: 25%;
-  width: 100%;
+  width: 24rem; /* w-96 */
+  height: 100%;
   background-color: rgba(31, 41, 55, 0.8);
   backdrop-filter: blur(4px);
-  padding: 0.75rem;
+  padding: 1rem;
   border-radius: 0.75rem;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-gray-700);
   box-shadow: var(--shadow-inner);
   box-sizing: border-box;
-}
-@media (min-width: 768px) { /* md */
-  .log-panel {
-    height: auto;
-    flex-grow: 1;
-  }
 }
 
 .log-panel h3 {
