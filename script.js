@@ -1,4 +1,3 @@
-
 // --- CONSTANTS ---
 const COLORS = {
   W: '#ffffff', R: '#dc2626', G: '#16a34a',
@@ -71,12 +70,90 @@ function rotateFace(face, clockwise) {
 };
 
 const adjacentStickers = {
-    U: { faces: ['B', 'R', 'F', 'L'], indices: [[2, 1, 0], [2, 1, 0], [2, 1, 0], [2, 1, 0]] },
-    D: { faces: ['F', 'R', 'B', 'L'], indices: [[6, 7, 8], [6, 7, 8], [6, 7, 8], [6, 7, 8]] },
-    R: { faces: ['U', 'B', 'D', 'F'], indices: [[8, 5, 2], [0, 3, 6], [2, 5, 8], [2, 5, 8]] },
-    L: { faces: ['U', 'F', 'D', 'B'], indices: [[0, 3, 6], [0, 3, 6], [6, 3, 0], [8, 5, 2]] },
-    F: { faces: ['U', 'R', 'D', 'L'], indices: [[6, 7, 8], [0, 3, 6], [2, 1, 0], [8, 5, 2]] },
-    B: { faces: ['U', 'L', 'D', 'R'], indices: [[2, 1, 0], [0, 3, 6], [6, 7, 8], [8, 5, 2]] },
+  U: {
+    clockwise: [
+      { fromFace: 'F', fromIndices: [0, 1, 2], toFace: 'R', toIndices: [0, 3, 6] },
+      { fromFace: 'R', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] },
+      { fromFace: 'B', fromIndices: [2, 5, 8], toFace: 'L', toIndices: [0, 3, 6] },
+      { fromFace: 'L', fromIndices: [0, 3, 6], toFace: 'F', toIndices: [0, 1, 2] },
+    ],
+    counterClockwise: [
+      { fromFace: 'F', fromIndices: [0, 1, 2], toFace: 'L', toIndices: [0, 3, 6] },
+      { fromFace: 'L', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] },
+      { fromFace: 'B', fromIndices: [2, 5, 8], toFace: 'R', toIndices: [0, 3, 6] },
+      { fromFace: 'R', fromIndices: [0, 3, 6], toFace: 'F', toIndices: [0, 1, 2] },
+    ],
+  },
+  D: {
+    clockwise: [
+      { fromFace: 'F', fromIndices: [6, 7, 8], toFace: 'L', toIndices: [6, 7, 8] },
+      { fromFace: 'L', fromIndices: [6, 7, 8], toFace: 'B', toIndices: [6, 7, 8] },
+      { fromFace: 'B', fromIndices: [6, 7, 8], toFace: 'R', toIndices: [6, 7, 8] },
+      { fromFace: 'R', fromIndices: [6, 7, 8], toFace: 'F', toIndices: [6, 7, 8] },
+    ],
+    counterClockwise: [
+      { fromFace: 'F', fromIndices: [6, 7, 8], toFace: 'R', toIndices: [6, 7, 8] },
+      { fromFace: 'R', fromIndices: [6, 7, 8], toFace: 'B', toIndices: [6, 7, 8] },
+      { fromFace: 'B', fromIndices: [6, 7, 8], toFace: 'L', toIndices: [6, 7, 8] },
+      { fromFace: 'L', fromIndices: [6, 7, 8], toFace: 'F', toIndices: [6, 7, 8] },
+    ],
+  },
+  R: {
+    clockwise: [
+      { fromFace: 'U', fromIndices: [8, 5, 2], toFace: 'F', toIndices: [8, 5, 2] },
+      { fromFace: 'F', fromIndices: [8, 5, 2], toFace: 'D', toIndices: [8, 5, 2] },
+      { fromFace: 'D', fromIndices: [8, 5, 2], toFace: 'B', toIndices: [0, 3, 6] }, // B is inverted
+      { fromFace: 'B', fromIndices: [0, 3, 6], toFace: 'U', toIndices: [8, 5, 2] }, // B is inverted
+    ],
+    counterClockwise: [
+      { fromFace: 'U', fromIndices: [8, 5, 2], toFace: 'B', toIndices: [0, 3, 6] }, // B is inverted
+      { fromFace: 'B', fromIndices: [0, 3, 6], toFace: 'D', toIndices: [8, 5, 2] }, // B is inverted
+      { fromFace: 'D', fromIndices: [8, 5, 2], toFace: 'F', toIndices: [8, 5, 2] },
+      { fromFace: 'F', fromIndices: [8, 5, 2], toFace: 'U', toIndices: [8, 5, 2] },
+    ],
+  },
+  L: {
+    clockwise: [
+      { fromFace: 'U', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] }, // B is inverted
+      { fromFace: 'B', fromIndices: [2, 5, 8], toFace: 'D', toIndices: [0, 3, 6] }, // B is inverted
+      { fromFace: 'D', fromIndices: [0, 3, 6], toFace: 'F', toIndices: [0, 3, 6] },
+      { fromFace: 'F', fromIndices: [0, 3, 6], toFace: 'U', toIndices: [0, 3, 6] },
+    ],
+    counterClockwise: [
+      { fromFace: 'U', fromIndices: [0, 3, 6], toFace: 'F', toIndices: [0, 3, 6] },
+      { fromFace: 'F', fromIndices: [0, 3, 6], toFace: 'D', toIndices: [0, 3, 6] },
+      { fromFace: 'D', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] }, // B is inverted
+      { fromFace: 'B', fromIndices: [2, 5, 8], toFace: 'U', toIndices: [0, 3, 6] }, // B is inverted
+    ],
+  },
+  F: {
+    clockwise: [
+      { fromFace: 'U', fromIndices: [6, 7, 8], toFace: 'R', toIndices: [0, 3, 6] },
+      { fromFace: 'R', fromIndices: [0, 3, 6], toFace: 'D', toIndices: [2, 1, 0] },
+      { fromFace: 'D', fromIndices: [2, 1, 0], toFace: 'L', toIndices: [8, 5, 2] },
+      { fromFace: 'L', fromIndices: [8, 5, 2], toFace: 'U', toIndices: [6, 7, 8] },
+    ],
+    counterClockwise: [
+      { fromFace: 'U', fromIndices: [6, 7, 8], toFace: 'L', toIndices: [8, 5, 2] },
+      { fromFace: 'L', fromIndices: [8, 5, 2], toFace: 'D', toIndices: [2, 1, 0] },
+      { fromFace: 'D', fromIndices: [2, 1, 0], toFace: 'R', toIndices: [0, 3, 6] },
+      { fromFace: 'R', fromIndices: [0, 3, 6], toFace: 'U', toIndices: [6, 7, 8] },
+    ],
+  },
+  B: {
+    clockwise: [
+      { fromFace: 'U', fromIndices: [2, 1, 0], toFace: 'L', toIndices: [0, 3, 6] },
+      { fromFace: 'L', fromIndices: [0, 3, 6], toFace: 'D', toIndices: [6, 7, 8] },
+      { fromFace: 'D', fromIndices: [6, 7, 8], toFace: 'R', toIndices: [8, 5, 2] },
+      { fromFace: 'R', fromIndices: [8, 5, 2], toFace: 'U', toIndices: [2, 1, 0] },
+    ],
+    counterClockwise: [
+      { fromFace: 'U', fromIndices: [2, 1, 0], toFace: 'R', toIndices: [8, 5, 2] },
+      { fromFace: 'R', fromIndices: [8, 5, 2], toFace: 'D', toIndices: [6, 7, 8] },
+      { fromFace: 'D', fromIndices: [6, 7, 8], toFace: 'L', toIndices: [0, 3, 6] },
+      { fromFace: 'L', fromIndices: [0, 3, 6], toFace: 'U', toIndices: [2, 1, 0] },
+    ],
+  },
 };
 
 function applySingleTurn(state, faceName, clockwise) {
@@ -84,19 +161,22 @@ function applySingleTurn(state, faceName, clockwise) {
   nextState[faceName] = rotateFace(nextState[faceName], clockwise);
   
   const adj = adjacentStickers[faceName];
-  const fromFaces = clockwise ? [adj.faces[3], ...adj.faces.slice(0, 3)] : adj.faces.slice(1);
-  if (!clockwise) fromFaces.push(adj.faces[0]);
+  const moves = clockwise ? adj.clockwise : adj.counterClockwise;
 
-  for (let i = 0; i < 4; i++) {
-    const fromFaceName = fromFaces[i];
-    const fromIndices = adj.indices[i];
-    const toFaceName = adj.faces[i];
-    const toIndices = adj.indices[i];
-    toIndices.forEach((toIdx, j) => {
-        const fromIdx = fromIndices[j];
-        nextState[toFaceName][toIdx] = state[fromFaceName][fromIdx];
+  // Store stickers that are moving out of their current positions
+  const movingStickers = {};
+  moves.forEach(move => {
+    movingStickers[move.fromFace] = move.fromIndices.map(idx => state[move.fromFace][idx]);
+  });
+
+  // Apply the moves
+  moves.forEach(move => {
+    move.toIndices.forEach((toIdx, j) => {
+      const fromIdx = move.fromIndices[j];
+      nextState[move.toFace][toIdx] = movingStickers[move.fromFace][j];
     });
-  }
+  });
+
   return nextState;
 };
 
