@@ -1,3 +1,4 @@
+
 // --- CONSTANTS ---
 const COLORS = {
   W: '#ffffff', R: '#dc2626', G: '#16a34a',
@@ -72,16 +73,16 @@ function rotateFace(face, clockwise) {
 const adjacentStickers = {
   U: {
     clockwise: [
-      { fromFace: 'F', fromIndices: [0, 1, 2], toFace: 'R', toIndices: [0, 3, 6] },
-      { fromFace: 'R', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] },
-      { fromFace: 'B', fromIndices: [2, 5, 8], toFace: 'L', toIndices: [0, 3, 6] },
-      { fromFace: 'L', fromIndices: [0, 3, 6], toFace: 'F', toIndices: [0, 1, 2] },
+      { fromFace: 'F', fromIndices: [0, 1, 2], toFace: 'R', toIndices: [0, 1, 2] },
+      { fromFace: 'R', fromIndices: [0, 1, 2], toFace: 'B', toIndices: [0, 1, 2] },
+      { fromFace: 'B', fromIndices: [0, 1, 2], toFace: 'L', toIndices: [0, 1, 2] },
+      { fromFace: 'L', fromIndices: [0, 1, 2], toFace: 'F', toIndices: [0, 1, 2] },
     ],
     counterClockwise: [
-      { fromFace: 'F', fromIndices: [0, 1, 2], toFace: 'L', toIndices: [0, 3, 6] },
-      { fromFace: 'L', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] },
-      { fromFace: 'B', fromIndices: [2, 5, 8], toFace: 'R', toIndices: [0, 3, 6] },
-      { fromFace: 'R', fromIndices: [0, 3, 6], toFace: 'F', toIndices: [0, 1, 2] },
+      { fromFace: 'F', fromIndices: [0, 1, 2], toFace: 'L', toIndices: [0, 1, 2] },
+      { fromFace: 'L', fromIndices: [0, 1, 2], toFace: 'B', toIndices: [0, 1, 2] },
+      { fromFace: 'B', fromIndices: [0, 1, 2], toFace: 'R', toIndices: [0, 1, 2] },
+      { fromFace: 'R', fromIndices: [0, 1, 2], toFace: 'F', toIndices: [0, 1, 2] },
     ],
   },
   D: {
