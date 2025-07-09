@@ -1,4 +1,3 @@
-
 // --- CONSTANTS ---
 const COLORS = {
   W: '#ffffff', R: '#dc2626', G: '#16a34a',
