@@ -197,7 +197,7 @@ function applyCubeRotation(state, axis, clockwise) {
         newState[face] = sourceState[sourceFace];
         if (axis === 'x') {
             // For x rotation, all cycling faces (U,F,D,B) need to be rotated 90 deg CW
-            newState[face] = rotateFace(newState[face], true);
+            newState[face] = rotateFace(newState[face], clockwise);
         }
         if (axis === 'z') {
             // For z rotation, all cycling faces (U,L,D,R) need to be rotated 90 deg CW if clockwise, 90 deg CCW if anti-clockwise
@@ -296,6 +296,7 @@ function resizeCanvas() {
 
 function drawCube() {
   const ctx = canvas.getContext('2d');
+  // Guard Clause: Check for rendering context
   if (!ctx) return;
 
   const size = resizeCanvas();
@@ -545,6 +546,8 @@ function closeStickerSearchModal() {
 
 function handleSearchSticker() {
   const id = parseInt(stickerIdInput.value);
+
+  // Guard Clause: Validate the ID
   if (isNaN(id) || id < 0 || id > 53) {
     searchResult.textContent = 'Por favor, introduce un ID válido (0-53).';
     searchResult.style.color = 'var(--color-log-error)';
@@ -552,13 +555,17 @@ function handleSearchSticker() {
   }
 
   const location = findStickerLocation(id);
-  if (location) {
-    searchResult.textContent = `El sticker ID ${id} (color ${location.color}) está en la cara ${location.face} en la posición ${location.index}.`;
-    searchResult.style.color = 'var(--color-log-success)';
-  } else {
+
+  // Guard Clause: Check if sticker was found
+  if (!location) {
     searchResult.textContent = `No se encontró el sticker ID ${id}.`;
     searchResult.style.color = 'var(--color-log-error)';
+    return;
   }
+  
+  // Happy path
+  searchResult.textContent = `El sticker ID ${id} (color ${location.color}) está en la cara ${location.face} en la posición ${location.index}.`;
+  searchResult.style.color = 'var(--color-log-success)';
 }
 
 // --- INITIALIZATION ---
@@ -578,7 +585,9 @@ function createMoveButtons() {
       button.textContent = move;
       button.className = 'move-button';
       button.onclick = () => {
+        // Guard Clause: Prevent moves while loading
         if (isLoading) return;
+
         addLog(`Movimiento: ${move}`, 'VERBOSE');
         applyMove(move);
         drawCube();
