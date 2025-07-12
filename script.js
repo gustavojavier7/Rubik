@@ -333,6 +333,18 @@ function drawCube() {
   projectedFaces.forEach(({ name, v2D }) => drawFace(ctx, name, v2D, size));
 }
 
+function getVisualIndex(faceName, row, col) {
+  switch (faceName) {
+    case 'U': return col * 3 + (2 - row); // Rotated 90 deg CCW
+    case 'D': return (2 - col) * 3 + row; // Rotated 90 deg CW
+    case 'F': return (2 - row) * 3 + col; // Flipped vertically
+    case 'B': return row * 3 + (2 - col); // Flipped horizontally (viewed from front)
+    case 'R': return row * 3 + col; // Correct as is
+    case 'L': return row * 3 + col; // Correct as is
+    default: return row * 3 + col;
+  }
+}
+
 function drawFace(ctx, faceName, faceVertices, size) {
   const [v0, v1, v2, v3] = faceVertices;
   const points = [];
@@ -356,7 +368,10 @@ function drawFace(ctx, faceName, faceVertices, size) {
       ctx.lineTo(p2[0], p2[1]);
       ctx.lineTo(p3[0], p3[1]);
       ctx.closePath();
-      ctx.fillStyle = COLORS[cubeState[faceName][i * 3 + j].color];
+      
+      const visualIdx = getVisualIndex(faceName, i, j);
+      ctx.fillStyle = COLORS[cubeState[faceName][visualIdx].color];
+      
       ctx.fill();
       ctx.strokeStyle = '#111827';
       ctx.lineWidth = size * 0.008;
