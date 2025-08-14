@@ -253,10 +253,11 @@ function executeAlgorithm(alg, record = false) {
 
 function isSolved() {
   return faceNames.every(face => {
-    const firstColor = cubeState[face][0];
-    return cubeState[face].every(color => color === firstColor);
+    const firstColor = cubeState[face][4].color; // centro
+    return cubeState[face].every(st => st.color === firstColor);
   });
 }
+
 
 // --- RENDERING & UI ---
 function addLog(message, level = 'INFO') {
