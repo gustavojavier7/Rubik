@@ -335,16 +335,9 @@ function drawCube() {
 }
 
 function getVisualIndex(faceName, row, col) {
-  switch (faceName) {
-    case 'U': return col * 3 + (2 - row); // Rotated 90 deg CCW
-    case 'D': return (2 - col) * 3 + row; // Rotated 90 deg CW
-    case 'F': return (2 - row) * 3 + col; // Flipped vertically
-    case 'B': return row * 3 + (2 - col); // Flipped horizontally (viewed from front)
-    case 'R': return row * 3 + col; // Correct as is
-    case 'L': return row * 3 + col; // Correct as is
-    default: return row * 3 + col;
-  }
+  return row * 3 + col; // 0..8 como: 0 1 2 / 3 4 5 / 6 7 8
 }
+
 
 function drawFace(ctx, faceName, faceVertices, size) {
   const [v0, v1, v2, v3] = faceVertices;
