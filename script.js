@@ -99,19 +99,20 @@ const adjacentStickers = {
     ],
   },
   R: {
-    clockwise: [
-      { fromFace: 'U', fromIndices: [8, 5, 2], toFace: 'F', toIndices: [8, 5, 2] },
-      { fromFace: 'F', fromIndices: [8, 5, 2], toFace: 'D', toIndices: [8, 5, 2] },
-      { fromFace: 'D', fromIndices: [8, 5, 2], toFace: 'B', toIndices: [0, 3, 6] }, // B is inverted
-      { fromFace: 'B', fromIndices: [0, 3, 6], toFace: 'U', toIndices: [8, 5, 2] }, // B is inverted
-    ],
-    counterClockwise: [
-      { fromFace: 'U', fromIndices: [8, 5, 2], toFace: 'B', toIndices: [0, 3, 6] }, // B is inverted
-      { fromFace: 'B', fromIndices: [0, 3, 6], toFace: 'D', toIndices: [8, 5, 2] }, // B is inverted
-      { fromFace: 'D', fromIndices: [8, 5, 2], toFace: 'F', toIndices: [8, 5, 2] },
-      { fromFace: 'F', fromIndices: [8, 5, 2], toFace: 'U', toIndices: [8, 5, 2] },
-    ],
-  },
+  clockwise: [
+    { fromFace: 'U', fromIndices: [2, 5, 8], toFace: 'F', toIndices: [2, 5, 8] },
+    { fromFace: 'F', fromIndices: [2, 5, 8], toFace: 'D', toIndices: [2, 5, 8] },
+    { fromFace: 'D', fromIndices: [2, 5, 8], toFace: 'B', toIndices: [6, 3, 0] }, // B invertida
+    { fromFace: 'B', fromIndices: [6, 3, 0], toFace: 'U', toIndices: [2, 5, 8] }, // B invertida
+  ],
+  counterClockwise: [
+    { fromFace: 'U', fromIndices: [2, 5, 8], toFace: 'B', toIndices: [6, 3, 0] }, // B invertida
+    { fromFace: 'B', fromIndices: [6, 3, 0], toFace: 'D', toIndices: [2, 5, 8] }, // B invertida
+    { fromFace: 'D', fromIndices: [2, 5, 8], toFace: 'F', toIndices: [2, 5, 8] },
+    { fromFace: 'F', fromIndices: [2, 5, 8], toFace: 'U', toIndices: [2, 5, 8] },
+  ],
+},
+
   L: {
     clockwise: [
       { fromFace: 'U', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] }, // B is inverted
