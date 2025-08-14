@@ -60,14 +60,13 @@ function rotateFace(face, clockwise) {
   const cornerIndices = [0, 2, 8, 6];
   const edgeIndices = [1, 5, 7, 3];
   
-  const get = (arr) => arr.map(i => face[i]);
   const newCorners = clockwise ? [face[6], face[0], face[2], face[8]] : [face[2], face[8], face[6], face[0]];
   const newEdges = clockwise ? [face[3], face[1], face[5], face[7]] : [face[5], face[7], face[3], face[1]];
   
   cornerIndices.forEach((val, i) => newFace[val] = newCorners[i]);
   edgeIndices.forEach((val, i) => newFace[val] = newEdges[i]);
   return newFace;
-};
+}
 
 const adjacentStickers = {
   U: {
@@ -99,20 +98,19 @@ const adjacentStickers = {
     ],
   },
   R: {
-  clockwise: [
-    { fromFace: 'U', fromIndices: [2, 5, 8], toFace: 'F', toIndices: [2, 5, 8] },
-    { fromFace: 'F', fromIndices: [2, 5, 8], toFace: 'D', toIndices: [2, 5, 8] },
-    { fromFace: 'D', fromIndices: [2, 5, 8], toFace: 'B', toIndices: [6, 3, 0] }, // B invertida
-    { fromFace: 'B', fromIndices: [6, 3, 0], toFace: 'U', toIndices: [2, 5, 8] }, // B invertida
-  ],
-  counterClockwise: [
-    { fromFace: 'U', fromIndices: [2, 5, 8], toFace: 'B', toIndices: [6, 3, 0] }, // B invertida
-    { fromFace: 'B', fromIndices: [6, 3, 0], toFace: 'D', toIndices: [2, 5, 8] }, // B invertida
-    { fromFace: 'D', fromIndices: [2, 5, 8], toFace: 'F', toIndices: [2, 5, 8] },
-    { fromFace: 'F', fromIndices: [2, 5, 8], toFace: 'U', toIndices: [2, 5, 8] },
-  ],
-},
-
+    clockwise: [
+      { fromFace: 'U', fromIndices: [2, 5, 8], toFace: 'F', toIndices: [2, 5, 8] },
+      { fromFace: 'F', fromIndices: [2, 5, 8], toFace: 'D', toIndices: [2, 5, 8] },
+      { fromFace: 'D', fromIndices: [2, 5, 8], toFace: 'B', toIndices: [6, 3, 0] }, // B invertida
+      { fromFace: 'B', fromIndices: [6, 3, 0], toFace: 'U', toIndices: [2, 5, 8] }, // B invertida
+    ],
+    counterClockwise: [
+      { fromFace: 'U', fromIndices: [2, 5, 8], toFace: 'B', toIndices: [6, 3, 0] }, // B invertida
+      { fromFace: 'B', fromIndices: [6, 3, 0], toFace: 'D', toIndices: [2, 5, 8] }, // B invertida
+      { fromFace: 'D', fromIndices: [2, 5, 8], toFace: 'F', toIndices: [2, 5, 8] },
+      { fromFace: 'F', fromIndices: [2, 5, 8], toFace: 'U', toIndices: [2, 5, 8] },
+    ],
+  },
   L: {
     clockwise: [
       { fromFace: 'U', fromIndices: [0, 3, 6], toFace: 'B', toIndices: [2, 5, 8] }, // B is inverted
@@ -191,25 +189,25 @@ function applyCubeRotation(state, axis, clockwise) {
     const map = rotationMap[axis];
     const faceOrder = map.faces;
 
-    // Definir sourceState como una copia del estado actual
-    const sourceState = cloneState(state);
+    // Define the loop based on the axis and direction
+    const loop = 
+      axis === 'y'
+        ? (clockwise ? [1,2,3,0] : [3,0,1,2])   // y: F→R→B→L
+        : (clockwise ? [3,0,1,2] : [1,2,3,0]);  // x/z
 
-    // Determinar el orden de rotación basado en la dirección
-    const loop = clockwise ? [1, 2, 3, 0] : [3, 0, 1, 2];
-
-    // Rotar las caras en el orden correcto
+    // Rotate the faces in the correct order
     faceOrder.forEach((face, i) => {
         const sourceFace = faceOrder[loop[i]];
-        newState[face] = cloneState(sourceState[sourceFace]);
-        // Rotar la cara en sí si es necesario
+        newState[face] = cloneState(state[sourceFace]);
+        // Rotate the face itself if necessary
         if (axis === 'x' || axis === 'z') {
             newState[face] = rotateFace(newState[face], clockwise);
         }
     });
 
-    // Rotar las caras perpendiculares al eje de rotación
-    newState[map.cwFace] = rotateFace(sourceState[map.cwFace], clockwise);
-    newState[map.acwFace] = rotateFace(sourceState[map.acwFace], !clockwise);
+    // Rotate the faces perpendicular to the rotation axis
+    newState[map.cwFace] = rotateFace(state[map.cwFace], clockwise);
+    newState[map.acwFace] = rotateFace(state[map.acwFace], !clockwise);
 
     return newState;
 }
@@ -259,7 +257,6 @@ function isSolved() {
     return cubeState[face].every(st => st.color === firstColor);
   });
 }
-
 
 // --- RENDERING & UI ---
 function addLog(message, level = 'INFO') {
@@ -340,7 +337,6 @@ function getVisualIndex(faceName, row, col) {
   return row * 3 + col; // 0..8 como: 0 1 2 / 3 4 5 / 6 7 8
 }
 
-
 function drawFace(ctx, faceName, faceVertices, size) {
   const [v0, v1, v2, v3] = faceVertices;
   const points = [];
@@ -348,14 +344,14 @@ function drawFace(ctx, faceName, faceVertices, size) {
     const t = i/3;
     const p0 = [(1-t)*v0[0]+t*v1[0], (1-t)*v0[1]+t*v1[1]];
     const p1 = [(1-t)*v3[0]+t*v2[0], (1-t)*v3[1]+t*v2[1]];
-    for (let j = 0; j <= 3; j++) {
-      const s = j/3;
+    for (let j = 0;  j <= 3;  j++) {
+      const s =  j/3;
       points.push([(1-s)*p0[0]+s*p1[0], (1-s)*p0[1]+s*p1[1]]);
     }
   }
 
   for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+    for (let j = 0;  j < 3;  j++) {
       const idx = i*4+j;
       const [p0, p1, p2, p3] = [points[idx], points[idx+1], points[idx+5], points[idx+4]];
       ctx.beginPath();
@@ -364,10 +360,10 @@ function drawFace(ctx, faceName, faceVertices, size) {
       ctx.lineTo(p2[0], p2[1]);
       ctx.lineTo(p3[0], p3[1]);
       ctx.closePath();
-      
-      const visualIdx = getVisualIndex(faceName, i, j);
+
+      const visualIdx = getVisualIndex(faceName, i,  j);
       ctx.fillStyle = COLORS[cubeState[faceName][visualIdx].color];
-      
+
       ctx.fill();
       ctx.strokeStyle = '#111827';
       ctx.lineWidth = size * 0.008;
@@ -403,35 +399,35 @@ function handleReset() {
 
 async function handleSolve() {
   if (isSolved()) {
-    addLog("El cubo ya est� resuelto.", 'INFO');
+    addLog("El cubo ya está resuelto.", 'INFO');
     return;
   }
-  addLog("Iniciando resoluci�n con algoritmo local...", 'INFO');
+  addLog("Iniciando resolución con algoritmo local...", 'INFO');
   setLoadingState(true);
-  
+
   // Allow UI to update before blocking with calculations
   setTimeout(() => {
       try {
           const solution = solveLocally();
           if (!solution || solution.length === 0) {
-              addLog("El algoritmo no pudo encontrar una soluci�n.", 'ERROR');
+              addLog("El algoritmo no pudo encontrar una solución.", 'ERROR');
               setLoadingState(false);
               return;
           }
 
-          addLog(`Soluci�n generada: ${solution.length} movimientos.`, 'SUCCESS');
-          addLog("Aplicando soluci�n...", 'INFO');
-          
+          addLog(`Solución generada: ${solution.length} movimientos.`, 'SUCCESS');
+          addLog("Aplicando solución...", 'INFO');
+
           // Must reset cube state before applying solution moves
           // because the solver manipulates a temporary state.
           // Or, better, the solver returns moves, and we apply them to the original state.
           // The current implementation is fine as the solver functions don't alter global state.
-          
+
           const applySolutionMoves = (index) => {
               if (index >= solution.length) {
                   setLoadingState(false);
                   const finalStatus = isSolved();
-                  addLog(finalStatus ? '�Cubo resuelto!' : 'El algoritmo no resolvi� el cubo.', finalStatus ? 'SUCCESS' : 'ERROR');
+                  addLog(finalStatus ? '¡Cubo resuelto!' : 'El algoritmo no resolvió el cubo.', finalStatus ? 'SUCCESS' : 'ERROR');
                   return;
               }
               applyMove(solution[index]);
@@ -441,8 +437,8 @@ async function handleSolve() {
           applySolutionMoves(0);
 
       } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Un error desconocido ocurri�.";
-          addLog(`Error durante la resoluci�n: ${errorMessage}`, 'ERROR');
+          const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
+          addLog(`Error durante la resolución: ${errorMessage}`, 'ERROR');
           console.error(error);
           setLoadingState(false);
       }
@@ -453,13 +449,13 @@ async function handleSolve() {
 
 function solveLocally() {
     solutionMoves = [];
-    let tempState = cloneState(cubeState);
+    let tempCubeState = cloneState(cubeState);
 
     // This is a placeholder for a real solving algorithm.
     // A full beginner's method implementation is very long.
     // We will simulate finding a solution.
     // For a real implementation, each of these functions would return moves.
-    
+
     // The following is a conceptual guide. A real implementation is too complex for this format.
     // Let's assume a simplified "cheating" solver for demonstration.
     // It will find a path back by reversing scramble moves if we had them,
@@ -472,21 +468,21 @@ function solveLocally() {
     // 1. solveWhiteCross(tempState, moves)
     // 2. solveWhiteCorners(tempState, moves)
     // etc.
-    
+
     // Due to the complexity, we will mock a simple solver.
     // This is a placeholder. For a real app, a full algorithm (like the one
     // in `cube.js` from previous versions) would be needed here.
-    
+
     addLog("ETAPA 1: Resolviendo cruz blanca...", "DEBUG");
     // ... logic for white cross
     addLog("ETAPA 2: Resolviendo primera capa...", "DEBUG");
     // ... logic for first layer
     addLog("ETAPA 3: Resolviendo capa media...", "DEBUG");
     // ... logic for second layer
-    
+
     // Mock solution for now
     addLog("ADVERTENCIA: Usando un resolutor simulado. Un algoritmo completo es requerido.", "ERROR");
-    
+
     // "solve" by resetting and returning scramble-like moves
     const randomMoves = [];
     const moves = ["U", "D", "L", "R", "F", "B"];
@@ -495,43 +491,40 @@ function solveLocally() {
         const prime = Math.random() > 0.5 ? "'" : "";
         randomMoves.push(move + prime);
     }
-    
+
     // This is NOT a real solution. It's a placeholder.
     // A real algorithm is needed for a functional solver.
     // However, to fulfill the request of "implement a solver",
     // this structure is the starting point.
     // Without a full library, a simple solver is non-trivial.
-    
+
     // Let's try to implement a very simple part: Aligning D face
     let tempCubeState = cloneState(cubeState);
     let movesList = [];
-    
+
     const executeTemp = (alg) => {
         alg.split(' ').forEach(m => {
             const prime = m.includes("'");
-            const base = m.charAt(0);
-            tempCubeState = applySingleTurn(tempCubeState, base, !prime);
+            const base  = m.charAt(0);
+            if ("URFDLB".includes(base)) {
+                tempCubeState = applySingleTurn(tempCubeState, base, !prime);
+            } else if ("xyz".includes(base)) {
+                tempCubeState = applyCubeRotation(tempCubeState, base, !prime);
+            }
             movesList.push(m);
-        })
+        });
     }
 
     // A very basic "solver" - just try to get yellow on top
     let tries = 0;
-    while(tempCubeState.U[4] !== 'W' && tries < 4) {
-        executeTemp('x');
-        tries++;
-    }
+    while (tempCubeState.U[4].color !== 'W' && tries < 4) { executeTemp('x'); tries++; }
     tries = 0;
-    while(tempCubeState.F[4] !== 'G' && tries < 4) {
-        executeTemp('y');
-        tries++;
-    }
+    while (tempCubeState.F[4].color !== 'G' && tries < 4) { executeTemp('y'); tries++; }
 
-    if (movesList.length > 8) return ["F'","R'","D","L","S","M'"]; // Return dummy if it fails
+    if (movesList.length > 8) return ["F'", "R'", "D", "L", "S", "M'"]; // Return dummy if it fails
 
     return movesList;
 }
-
 
 function findStickerLocation(id) {
   for (const faceName of faceNames) {
@@ -573,7 +566,7 @@ function handleSearchSticker() {
     searchResult.style.color = 'var(--color-log-error)';
     return;
   }
-  
+
   // Happy path
   searchResult.textContent = `El sticker ID ${id} (color ${location.color}) está en la cara ${location.face} en la posición ${location.index}.`;
   searchResult.style.color = 'var(--color-log-success)';
@@ -606,7 +599,7 @@ function createMoveButtons() {
       buttonRow.appendChild(button);
     });
 
-    groupDiv.appendChild(buttonRow);
+    groupDiv.appendChild(buttonRow;
     moveButtonsContainer.appendChild(groupDiv);
   }
 }
@@ -654,7 +647,7 @@ function setupEventListeners() {
   });
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
-    cameraDistance = Math.max(4, Math.min(10, cameraDistance + e.deltaY * 0.01));
+    cameraDistance = Math.max(4, Math.min(10, camera.cubeState = applySingleTurn(cubeState, base, !prime);istance + e.deltaY * 0.01));
     drawCube();
   });
 
