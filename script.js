@@ -189,22 +189,27 @@ function applyCubeRotation(state, axis, clockwise) {
         z: { faces: ['U', 'L', 'D', 'R'], cwFace: 'F', acwFace: 'B' },
     };
     const map = rotationMap[axis];
-    const sourceState = cloneState(state);
     const faceOrder = map.faces;
-    const loop = clockwise ? [3, 0, 1, 2] : [1, 2, 3, 0];
-    
+
+    // Determinar el orden de rotación basado en la dirección
+    const loop = clockwise ? [1, 2, 3, 0] : [3, 0, 1, 2];
+
+    // Rotar las caras en el orden correcto
     faceOrder.forEach((face, i) => {
         const sourceFace = faceOrder[loop[i]];
-        newState[face] = sourceState[sourceFace];
-        if (axis === 'x') {
-            // For x rotation, all cycling faces (U,F,D,B) need to be rotated 90 deg CW
-            newState[face] = rotateFace(newState[face], clockwise);
-        }
-        if (axis === 'z') {
-            // For z rotation, all cycling faces (U,L,D,R) need to be rotated 90 deg CW if clockwise, 90 deg CCW if anti-clockwise
+        newState[face] = cloneState(sourceState[sourceFace]);
+        // Rotar la cara en sí si es necesario
+        if (axis === 'x' || axis === 'z') {
             newState[face] = rotateFace(newState[face], clockwise);
         }
     });
+
+    // Rotar las caras perpendiculares al eje de rotación
+    newState[map.cwFace] = rotateFace(sourceState[map.cwFace], clockwise);
+    newState[map.acwFace] = rotateFace(sourceState[map.acwFace], !clockwise);
+
+    return newState;
+}
 
     newState[map.cwFace] = rotateFace(sourceState[map.cwFace], clockwise);
     newState[map.acwFace] = rotateFace(sourceState[map.acwFace], !clockwise);
