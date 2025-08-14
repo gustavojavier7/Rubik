@@ -191,6 +191,9 @@ function applyCubeRotation(state, axis, clockwise) {
     const map = rotationMap[axis];
     const faceOrder = map.faces;
 
+    // Definir sourceState como una copia del estado actual
+    const sourceState = cloneState(state);
+
     // Determinar el orden de rotación basado en la dirección
     const loop = clockwise ? [1, 2, 3, 0] : [3, 0, 1, 2];
 
@@ -210,13 +213,6 @@ function applyCubeRotation(state, axis, clockwise) {
 
     return newState;
 }
-
-    newState[map.cwFace] = rotateFace(sourceState[map.cwFace], clockwise);
-    newState[map.acwFace] = rotateFace(sourceState[map.acwFace], !clockwise);
-    
-    return newState;
-}
-
 
 function applyMove(move, record = false) {
   const prime = move.includes("'");
