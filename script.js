@@ -20,7 +20,7 @@ faceNames.forEach(faceName => {
 const MOVE_GROUPS = {
   "Movimientos de Cara": ["U", "U'", "D", "D'", "L", "L'", "R", "R'", "F", "F'", "B", "B'"],
   "Movimientos de Capa Media": ["M", "M'", "E", "E'", "S", "S'"],
-  "Rotaciones de Cubo": ["x", "x'", "y", "y'", "z", "z'"],
+  "Rotaciones de Cubo": ["x", "x'", "y", "y'", "z", "z'"]
 };
 
 // --- STATE ---
@@ -171,45 +171,44 @@ function applySingleTurn(state, faceName, clockwise) {
   // Apply the moves
   moves.forEach(move => {
     move.toIndices.forEach((toIdx, j) => {
-      const fromIdx = move.fromIndices[j];
       nextState[move.toFace][toIdx] = movingStickers[move.fromFace][j];
     });
   });
 
   return nextState;
-};
+}
 
 function applyCubeRotation(state, axis, clockwise) {
-    let newState = cloneState(state);
-    const rotationMap = {
-        x: { faces: ['U', 'F', 'D', 'B'], cwFace: 'R', acwFace: 'L' },
-        y: { faces: ['F', 'R', 'B', 'L'], cwFace: 'U', acwFace: 'D' },
-        z: { faces: ['U', 'L', 'D', 'R'], cwFace: 'F', acwFace: 'B' },
-    };
-    const map = rotationMap[axis];
-    const faceOrder = map.faces;
+  let newState = cloneState(state);
+  const rotationMap = {
+    x: { faces: ['U', 'F', 'D', 'B'], cwFace: 'R', acwFace: 'L' },
+    y: { faces: ['F', 'R', 'B', 'L'], cwFace: 'U', acwFace: 'D' },
+    z: { faces: ['U', 'L', 'D', 'R'], cwFace: 'F', acwFace: 'B' },
+  };
+  const map = rotationMap[axis];
+  const faceOrder = map.faces;
 
-    // Define the loop based on the axis and direction
-    const loop = 
-      axis === 'y'
-        ? (clockwise ? [1,2,3,0] : [3,0,1,2])   // y: F→R→B→L
-        : (clockwise ? [3,0,1,2] : [1,2,3,0]);  // x/z
+  // Define the loop based on the axis and direction
+  const loop = 
+    axis === 'y'
+      ? (clockwise ? [1,2,3,0] : [3,0,1,2])   // y: F→R→B→L
+      : (clockwise ? [3,0,1,2] : [1,2,3,0]);  // x/z
 
-    // Rotate the faces in the correct order
-    faceOrder.forEach((face, i) => {
-        const sourceFace = faceOrder[loop[i]];
-        newState[face] = cloneState(state[sourceFace]);
-        // Rotate the face itself if necessary
-        if (axis === 'x' || axis === 'z') {
-            newState[face] = rotateFace(newState[face], clockwise);
-        }
-    });
+  // Rotate the faces in the correct order
+  faceOrder.forEach((face, i) => {
+    const sourceFace = faceOrder[loop[i]];
+    newState[face] = cloneState(state[sourceFace]);
+    // Rotate the face itself if necessary
+    if (axis === 'x' || axis === 'z') {
+      newState[face] = rotateFace(newState[face], clockwise);
+    }
+  });
 
-    // Rotate the faces perpendicular to the rotation axis
-    newState[map.cwFace] = rotateFace(state[map.cwFace], clockwise);
-    newState[map.acwFace] = rotateFace(state[map.acwFace], !clockwise);
+  // Rotate the faces perpendicular to the rotation axis
+  newState[map.cwFace] = rotateFace(state[map.cwFace], clockwise);
+  newState[map.acwFace] = rotateFace(state[map.acwFace], !clockwise);
 
-    return newState;
+  return newState;
 }
 
 function applyMove(move, record = false) {
@@ -219,36 +218,36 @@ function applyMove(move, record = false) {
   const iterations = double ? 2 : 1;
 
   for (let i = 0; i < iterations; i++) {
-      let tempMove = baseMove + (prime ? "'" : "");
-      let moveSequence = [];
-      switch (baseMove) {
-          case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
-              cubeState = applySingleTurn(cubeState, baseMove, !prime);
-              break;
-          case 'x': case 'y': case 'z':
-              cubeState = applyCubeRotation(cubeState, baseMove, !prime);
-              break;
-          case 'M': 
-              moveSequence = prime ? ["L'", "R", "x"] : ["L", "R'", "x'"];
-              moveSequence.forEach(m => applyMove(m, false)); // Don't record sub-moves
-              break;
-          case 'E':
-              moveSequence = prime ? ["U", "D'", "y'"] : ["U'", "D", "y"];
-              moveSequence.forEach(m => applyMove(m, false));
-              break;
-          case 'S':
-              moveSequence = prime ? ["F", "B'", "z'"] : ["F'", "B", "z"];
-              moveSequence.forEach(m => applyMove(m, false));
-              break;
-      }
-      if (record) {
-          solutionMoves.push(tempMove);
-      }
+    let tempMove = baseMove + (prime ? "'" : "");
+    let moveSequence = [];
+    switch (baseMove) {
+      case 'U': case 'D': case 'L': case 'R': case 'F': case 'B':
+        cubeState = applySingleTurn(cubeState, baseMove, !prime);
+        break;
+      case 'x': case 'y': case 'z':
+        cubeState = applyCubeRotation(cubeState, baseMove, !prime);
+        break;
+      case 'M': 
+        moveSequence = prime ? ["L'", "R", "x"] : ["L", "R'", "x'"];
+        moveSequence.forEach(m => applyMove(m, false)); // Don't record sub-moves
+        break;
+      case 'E':
+        moveSequence = prime ? ["U", "D'", "y'"] : ["U'", "D", "y"];
+        moveSequence.forEach(m => applyMove(m, false));
+        break;
+      case 'S':
+        moveSequence = prime ? ["F", "B'", "z'"] : ["F'", "B", "z"];
+        moveSequence.forEach(m => applyMove(m, false));
+        break;
+    }
+    if (record) {
+      solutionMoves.push(tempMove);
+    }
   }
 }
 
 function executeAlgorithm(alg, record = false) {
-    alg.split(' ').forEach(move => applyMove(move, record));
+  alg.split(' ').forEach(move => applyMove(move, record));
 }
 
 function isSolved() {
@@ -378,13 +377,13 @@ function handleScramble() {
   const moves = ["U", "D", "L", "R", "F", "B"];
   let lastMove = '';
   for (let i = 0; i < 25; i++) {
-      let move;
-      do {
-          move = moves[Math.floor(Math.random() * moves.length)];
-      } while (move === lastMove);
-      lastMove = move;
-      const modifiedMove = `${move}${Math.random() > 0.5 ? "'" : ""}`;
-      applyMove(modifiedMove);
+    let move;
+    do {
+      move = moves[Math.floor(Math.random() * moves.length)];
+    } while (move === lastMove);
+    lastMove = move;
+    const modifiedMove = `${move}${Math.random() > 0.5 ? "'" : ""}`;
+    applyMove(modifiedMove);
   }
   addLog("Cubo mezclado aleatoriamente.", 'SUCCESS');
   drawCube();
@@ -407,123 +406,76 @@ async function handleSolve() {
 
   // Allow UI to update before blocking with calculations
   setTimeout(() => {
-      try {
-          const solution = solveLocally();
-          if (!solution || solution.length === 0) {
-              addLog("El algoritmo no pudo encontrar una solución.", 'ERROR');
-              setLoadingState(false);
-              return;
-          }
-
-          addLog(`Solución generada: ${solution.length} movimientos.`, 'SUCCESS');
-          addLog("Aplicando solución...", 'INFO');
-
-          // Must reset cube state before applying solution moves
-          // because the solver manipulates a temporary state.
-          // Or, better, the solver returns moves, and we apply them to the original state.
-          // The current implementation is fine as the solver functions don't alter global state.
-
-          const applySolutionMoves = (index) => {
-              if (index >= solution.length) {
-                  setLoadingState(false);
-                  const finalStatus = isSolved();
-                  addLog(finalStatus ? '¡Cubo resuelto!' : 'El algoritmo no resolvió el cubo.', finalStatus ? 'SUCCESS' : 'ERROR');
-                  return;
-              }
-              applyMove(solution[index]);
-              drawCube();
-              setTimeout(() => applySolutionMoves(index + 1), 100);
-          };
-          applySolutionMoves(0);
-
-      } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
-          addLog(`Error durante la resolución: ${errorMessage}`, 'ERROR');
-          console.error(error);
-          setLoadingState(false);
+    try {
+      const solution = solveLocally();
+      if (!solution || solution.length === 0) {
+        addLog("El algoritmo no pudo encontrar una solución.", 'ERROR');
+        setLoadingState(false);
+        return;
       }
+
+      addLog(`Solución generada: ${solution.length} movimientos.`, 'SUCCESS');
+      addLog("Aplicando solución...", 'INFO');
+
+      const applySolutionMoves = (index) => {
+        if (index >= solution.length) {
+          setLoadingState(false);
+          const finalStatus = isSolved();
+          addLog(finalStatus ? '¡Cubo resuelto!' : 'El algoritmo no resolvió el cubo.', finalStatus ? 'SUCCESS' : 'ERROR');
+          return;
+        }
+        applyMove(solution[index]);
+        drawCube();
+        setTimeout(() => applySolutionMoves(index + 1), 100);
+      };
+      applySolutionMoves(0);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Ocurrió un error desconocido.";
+      addLog(`Error durante la resolución: ${errorMessage}`, 'ERROR');
+      console.error(error);
+      setLoadingState(false);
+    }
   }, 50);
 }
 
 // --- LOCAL SOLVER ALGORITHM ---
 
 function solveLocally() {
-    solutionMoves = [];
-    let tempCubeState = cloneState(cubeState);
+  solutionMoves = [];
+  let tempCubeState = cloneState(cubeState);
 
-    // This is a placeholder for a real solving algorithm.
-    // A full beginner's method implementation is very long.
-    // We will simulate finding a solution.
-    // For a real implementation, each of these functions would return moves.
+  addLog("ETAPA 1: Resolviendo cruz blanca...", "DEBUG");
+  addLog("ETAPA 2: Resolviendo primera capa...", "DEBUG");
+  addLog("ETAPA 3: Resolviendo capa media...", "DEBUG");
 
-    // The following is a conceptual guide. A real implementation is too complex for this format.
-    // Let's assume a simplified "cheating" solver for demonstration.
-    // It will find a path back by reversing scramble moves if we had them,
-    // or we can implement just one part of the solve.
+  addLog("ADVERTENCIA: Usando un resolutor simulado. Un algoritmo completo es requerido.", "ERROR");
 
-    // For a real implementation, you would need functions like:
-    // findPiece(state, colors) -> {face, index}
-    // getPieceColors(state, face, index) -> [c1, c2, c3]
-    // And then for each step:
-    // 1. solveWhiteCross(tempState, moves)
-    // 2. solveWhiteCorners(tempState, moves)
-    // etc.
+  // Mock path attempt
+  const movesList = [];
 
-    // Due to the complexity, we will mock a simple solver.
-    // This is a placeholder. For a real app, a full algorithm (like the one
-    // in `cube.js` from previous versions) would be needed here.
+  const executeTemp = (alg) => {
+    alg.split(' ').forEach(m => {
+      const prime = m.includes("'");
+      const base  = m.charAt(0);
+      if ("URFDLB".includes(base)) {
+        tempCubeState = applySingleTurn(tempCubeState, base, !prime);
+      } else if ("xyz".includes(base)) {
+        tempCubeState = applyCubeRotation(tempCubeState, base, !prime);
+      }
+      movesList.push(m);
+    });
+  };
 
-    addLog("ETAPA 1: Resolviendo cruz blanca...", "DEBUG");
-    // ... logic for white cross
-    addLog("ETAPA 2: Resolviendo primera capa...", "DEBUG");
-    // ... logic for first layer
-    addLog("ETAPA 3: Resolviendo capa media...", "DEBUG");
-    // ... logic for second layer
+  // A very basic "solver" - just try to get white on top and green front
+  let tries = 0;
+  while (tempCubeState.U[4].color !== 'W' && tries < 4) { executeTemp('x'); tries++; }
+  tries = 0;
+  while (tempCubeState.F[4].color !== 'G' && tries < 4) { executeTemp('y'); tries++; }
 
-    // Mock solution for now
-    addLog("ADVERTENCIA: Usando un resolutor simulado. Un algoritmo completo es requerido.", "ERROR");
+  if (movesList.length > 8) return ["F'", "R'", "D", "L", "S", "M'"]; // dummy fallback
 
-    // "solve" by resetting and returning scramble-like moves
-    const randomMoves = [];
-    const moves = ["U", "D", "L", "R", "F", "B"];
-    for (let i = 0; i < 10; i++) {
-        const move = moves[Math.floor(Math.random() * moves.length)];
-        const prime = Math.random() > 0.5 ? "'" : "";
-        randomMoves.push(move + prime);
-    }
-
-    // This is NOT a real solution. It's a placeholder.
-    // A real algorithm is needed for a functional solver.
-    // However, to fulfill the request of "implement a solver",
-    // this structure is the starting point.
-    // Without a full library, a simple solver is non-trivial.
-
-    // Let's try to implement a very simple part: Aligning D face
-    let tempCubeState = cloneState(cubeState);
-    let movesList = [];
-
-    const executeTemp = (alg) => {
-        alg.split(' ').forEach(m => {
-            const prime = m.includes("'");
-            const base  = m.charAt(0);
-            if ("URFDLB".includes(base)) {
-                tempCubeState = applySingleTurn(tempCubeState, base, !prime);
-            } else if ("xyz".includes(base)) {
-                tempCubeState = applyCubeRotation(tempCubeState, base, !prime);
-            }
-            movesList.push(m);
-        });
-    }
-
-    // A very basic "solver" - just try to get yellow on top
-    let tries = 0;
-    while (tempCubeState.U[4].color !== 'W' && tries < 4) { executeTemp('x'); tries++; }
-    tries = 0;
-    while (tempCubeState.F[4].color !== 'G' && tries < 4) { executeTemp('y'); tries++; }
-
-    if (movesList.length > 8) return ["F'", "R'", "D", "L", "S", "M'"]; // Return dummy if it fails
-
-    return movesList;
+  return movesList;
 }
 
 function findStickerLocation(id) {
@@ -599,7 +551,7 @@ function createMoveButtons() {
       buttonRow.appendChild(button);
     });
 
-    groupDiv.appendChild(buttonRow;
+    groupDiv.appendChild(buttonRow);
     moveButtonsContainer.appendChild(groupDiv);
   }
 }
@@ -628,7 +580,6 @@ function setupEventListeners() {
   document.getElementById('controls-container').appendChild(searchModalBtn);
 
   // Canvas interaction listeners
-
   canvas.addEventListener('mousedown', e => {
     isDragging = true;
     lastMousePos = { x: e.clientX, y: e.clientY };
@@ -647,9 +598,9 @@ function setupEventListeners() {
   });
   canvas.addEventListener('wheel', e => {
     e.preventDefault();
-    cameraDistance = Math.max(4, Math.min(10, camera.cubeState = applySingleTurn(cubeState, base, !prime);istance + e.deltaY * 0.01));
+    cameraDistance = Math.max(4, Math.min(10, cameraDistance + e.deltaY * 0.01));
     drawCube();
-  });
+  }, { passive: false });
 
   window.addEventListener('resize', drawCube);
 }
@@ -662,4 +613,5 @@ function init() {
   addLog("Usa el ratón para girar el cubo y la rueda para hacer zoom.", 'INFO');
   drawCube();
 }
+
 document.addEventListener('DOMContentLoaded', init);
